@@ -435,7 +435,7 @@ export default function StoreManagementApp() {
 
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out min-h-screen`}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">🏪 Vitrin+</h1>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><StoreIcon size={24} className="text-gray-800" /> Vitrin+</h1>
           <p className="text-sm text-gray-600 mt-1">Mağaza Yönetim Sistemi</p>
         </div>
         <div className="p-4 border-b border-gray-200">
@@ -499,7 +499,7 @@ export default function StoreManagementApp() {
               </svg>
             </button>
             <div className="flex-1 flex justify-center items-center gap-3">
-              <div className="text-3xl font-bold text-blue-600">🏪</div>
+              <StoreIcon size={32} className="text-blue-600" />
             </div>
             <div className="lg:hidden w-10" />
           </div>
@@ -532,14 +532,16 @@ export default function StoreManagementApp() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
                 {[
-                  { color: 'blue', icon: '🏪', label: 'Toplam Mağaza', value: stores.length },
-                  { color: 'green', icon: '📝', label: 'Düzenlenen', value: stores.filter(s => s.images?.some(img => img?.trim())).length },
-                  { color: 'orange', icon: '🏙️', label: 'Şehir Sayısı', value: getUniqueLocations().length },
-                  { color: 'purple', icon: '🎯', label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
-                ].map(({ color, icon, label, value }) => (
+                  { color: 'blue',   Icon: StoreIcon,     label: 'Toplam Mağaza',  value: stores.length },
+                  { color: 'green',  icon: '📝',          label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
+                  { color: 'orange', icon: '🏙️',         label: 'Şehir Sayısı',   value: getUniqueLocations().length },
+                  { color: 'purple', icon: '🎯',          label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
+                ].map(({ color, Icon, icon, label, value }) => (
                   <div key={label} className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-center">
-                      <div className={`p-3 bg-${color}-100 rounded-lg`}><span className="text-2xl">{icon}</span></div>
+                      <div className={`p-3 bg-${color}-100 rounded-lg`}>
+                        {Icon ? <Icon size={24} className={`text-${color}-600`} /> : <span className="text-2xl">{icon}</span>}
+                      </div>
                       <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
                     </div>
                   </div>
