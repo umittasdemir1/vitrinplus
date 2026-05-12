@@ -27,9 +27,8 @@ export default function StoreManagementApp() {
   const [newStore, setNewStore] = useState({ name: '', address: '', location: '' });
   const [addingSaving, setAddingSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
-  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: '', imageUrl: '' });
+  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: '', imageUrls: [] });
   const [renovationSaving, setRenovationSaving] = useState(false);
-  const [renovationImagePreview, setRenovationImagePreview] = useState('');
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
   const [renovationSearch, setRenovationSearch] = useState('');
   const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
@@ -59,20 +58,23 @@ export default function StoreManagementApp() {
     return () => { unsubStores?.(); unsubRenovations?.(); };
   }, []);
 
-  const handleRenovationImageSelect = async (file) => {
-    if (!file || !file.type.startsWith('image/')) return;
+  const handleRenovationImageSelect = async (files) => {
+    if (!files?.length) return;
     setUploadingRenovationImage(true);
     try {
-      const compressed = await compressImage(file);
-      const isWebP = compressed.startsWith('data:image/webp');
-      const blob = await (await fetch(compressed)).blob();
-      const ext = isWebP ? 'webp' : 'jpg';
-      const fileName = `renovation_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
-      const storageRef = ref(storage, `renovation-images/${fileName}`);
-      await uploadBytes(storageRef, blob);
-      const url = await getDownloadURL(storageRef);
-      setRenovationForm(prev => ({ ...prev, imageUrl: url }));
-      setRenovationImagePreview(url);
+      const uploaded = [];
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        const compressed = await compressImage(file);
+        const isWebP = compressed.startsWith('data:image/webp');
+        const blob = await (await fetch(compressed)).blob();
+        const ext = isWebP ? 'webp' : 'jpg';
+        const fileName = `renovation_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+        const storageRef = ref(storage, `renovation-images/${fileName}`);
+        await uploadBytes(storageRef, blob);
+        uploaded.push(await getDownloadURL(storageRef));
+      }
+      setRenovationForm(prev => ({ ...prev, imageUrls: [...prev.imageUrls, ...uploaded] }));
     } catch (e) {
       console.error('Fotoğraf yükleme hatası:', e);
     } finally {
@@ -91,12 +93,11 @@ export default function StoreManagementApp() {
         location: store?.location || '',
         talepTarihi: renovationForm.talepTarihi,
         aciklama: renovationForm.aciklama.trim(),
-        imageUrl: renovationForm.imageUrl || '',
+        imageUrls: renovationForm.imageUrls,
         createdAt: new Date().toISOString(),
       };
       await addDoc(collection(db, 'renovations'), data);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: '', imageUrl: '' });
-      setRenovationImagePreview('');
+      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: '', imageUrls: [] });
       setCurrentView('renovations-list');
     } catch (err) {
       console.error('Tadilat kaydetme hatası:', err);
@@ -341,11 +342,13 @@ export default function StoreManagementApp() {
     if (!window.confirm('Bu tadilat talebini silmek istediğinizden emin misiniz?')) return;
     const renovation = renovations.find(r => r.id === renovationId);
     try {
-      if (renovation?.imageUrl?.includes('firebasestorage.googleapis.com')) {
-        try {
-          const decodedPath = decodeURIComponent(renovation.imageUrl.split('/o/')[1].split('?')[0]);
-          await deleteObject(ref(storage, decodedPath));
-        } catch { /* ignore */ }
+      for (const url of (renovation?.imageUrls || (renovation?.imageUrl ? [renovation.imageUrl] : []))) {
+        if (url?.includes('firebasestorage.googleapis.com')) {
+          try {
+            const decodedPath = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
+            await deleteObject(ref(storage, decodedPath));
+          } catch { /* ignore */ }
+        }
       }
       await deleteDoc(doc(db, 'renovations', renovationId));
     } catch (e) {
@@ -784,41 +787,43 @@ export default function StoreManagementApp() {
                   {/* Fotoğraf upload */}
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fotoğraf (İsteğe Bağlı)</label>
-                    {renovationImagePreview ? (
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
-                        <img src={renovationImagePreview} alt="Önizleme" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => { setRenovationImagePreview(''); setRenovationForm(prev => ({ ...prev, imageUrl: '' })); }}
-                          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-1.5 rounded-full shadow transition-all"
-                        >
-                          <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <label className={`drag-zone flex flex-col items-center justify-center h-36 rounded-xl cursor-pointer ${uploadingRenovationImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={uploadingRenovationImage}
+                        onChange={(e) => { if (e.target.files?.length) handleRenovationImageSelect(Array.from(e.target.files)); e.target.value = ''; }}
+                      />
+                      {uploadingRenovationImage ? (
+                        <>
+                          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2" />
+                          <span className="text-sm text-gray-500">Yükleniyor...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                           </svg>
-                        </button>
+                          <span className="text-sm text-gray-500">Fotoğraf seç veya sürükle bırak</span>
+                          <span className="text-xs text-gray-400 mt-1">Ctrl ile çoklu seçim yapabilirsiniz</span>
+                        </>
+                      )}
+                    </label>
+                    {renovationForm.imageUrls.length > 0 && (
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {renovationForm.imageUrls.map((url, i) => (
+                          <div key={i} className="relative group">
+                            <img src={url} className="w-full h-16 object-cover rounded-lg" alt={`Önizleme ${i + 1}`} />
+                            <button
+                              type="button"
+                              onClick={() => setRenovationForm(prev => ({ ...prev, imageUrls: prev.imageUrls.filter((_, idx) => idx !== i) }))}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            >×</button>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
-                      <label className={`drag-zone flex flex-col items-center justify-center h-36 rounded-xl cursor-pointer ${uploadingRenovationImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          disabled={uploadingRenovationImage}
-                          onChange={(e) => { if (e.target.files[0]) handleRenovationImageSelect(e.target.files[0]); e.target.value = ''; }}
-                        />
-                        {uploadingRenovationImage ? (
-                          <>
-                            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2" />
-                            <span className="text-sm text-gray-500">Yükleniyor...</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                            </svg>
-                            <span className="text-sm text-gray-500">Fotoğraf seç veya sürükle bırak</span>
-                          </>
-                        )}
-                      </label>
                     )}
                   </div>
                 </div>

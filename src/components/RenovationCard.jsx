@@ -2,6 +2,15 @@ import { useState } from 'react';
 
 export default function RenovationCard({ renovation, onDelete }) {
   const [showModal, setShowModal] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const images = renovation.imageUrls?.length
+    ? renovation.imageUrls
+    : renovation.imageUrl
+      ? [renovation.imageUrl]
+      : [];
+
+  const currentImage = images[activeIndex];
 
   return (
     <>
@@ -9,24 +18,46 @@ export default function RenovationCard({ renovation, onDelete }) {
         {/* Fotoğraf alanı */}
         <div
           className="relative h-[200px] w-full bg-gray-100 overflow-hidden group cursor-pointer flex-shrink-0"
-          onClick={() => renovation.imageUrl && setShowModal(true)}
+          onClick={() => currentImage && setShowModal(true)}
         >
-          {renovation.imageUrl ? (
+          {currentImage ? (
             <>
               <img
-                src={renovation.imageUrl}
+                src={currentImage}
                 alt={`${renovation.storeName} tadilat`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all" />
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
-                className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
-              >
-                <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              </button>
+
+              {/* Önceki / Sonraki */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i - 1 + images.length) % images.length); }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1 rounded-full shadow transition-all"
+                  >
+                    <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" strokeWidth={2} /></svg>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i + 1) % images.length); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1 rounded-full shadow transition-all"
+                  >
+                    <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6" strokeWidth={2} /></svg>
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                    {images.map((_, i) => (
+                      <button key={i} onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
+                        className={`w-2 h-2 rounded-full transition-all ${i === activeIndex ? 'bg-blue-500' : 'bg-white bg-opacity-70'}`} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {images.length > 1 && (
+                <span className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-0.5 rounded-full">
+                  {activeIndex + 1}/{images.length}
+                </span>
+              )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -79,29 +110,41 @@ export default function RenovationCard({ renovation, onDelete }) {
       </div>
 
       {/* Fotoğraf modal */}
-      {showModal && renovation.imageUrl && (
+      {showModal && currentImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
           onClick={() => setShowModal(false)}
         >
           <div className="relative max-w-4xl max-h-full w-full">
             <img
-              src={renovation.imageUrl}
+              src={currentImage}
               alt={`${renovation.storeName} tadilat`}
               className="w-auto max-h-[80vh] object-contain mx-auto rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
+            {images.length > 1 && (
+              <>
+                <button onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i - 1 + images.length) % images.length); }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow-lg">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" strokeWidth={2} /></svg>
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i + 1) % images.length); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow-lg">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6" strokeWidth={2} /></svg>
+                </button>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-50 text-white text-sm px-4 py-1 rounded-full">
+                  {activeIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg transition-all"
+              className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg"
             >
               <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-50 text-white text-sm px-4 py-2 rounded-full">
-              {renovation.storeName} — {new Date(renovation.talepTarihi).toLocaleDateString('tr-TR')}
-            </div>
           </div>
         </div>
       )}
