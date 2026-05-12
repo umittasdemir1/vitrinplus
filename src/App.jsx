@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, setDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
@@ -35,40 +35,39 @@ export default function StoreManagementApp() {
   const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
 
   useEffect(() => {
-    loadStoresFromFirebase();
-    loadRenovations();
+    let unsubStores, unsubRenovations;
+
+    const init = async () => {
+      try {
+        await auth.authStateReady();
+        if (!auth.currentUser) await signInAnonymously(auth);
+
+        unsubStores = onSnapshot(collection(db, 'stores'), (snap) => {
+          setStores(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+        }, (err) => console.error('Stores snapshot hatası:', err));
+
+        const q = query(collection(db, 'renovations'), orderBy('createdAt', 'desc'));
+        unsubRenovations = onSnapshot(q, (snap) => {
+          setRenovations(snap.docs.map(d => ({ ...d.data(), id: d.id })));
+        }, (err) => console.error('Renovations snapshot hatası:', err));
+      } catch (err) {
+        console.error('Firebase init hatası:', err);
+      }
+    };
+
+    init();
+    return () => { unsubStores?.(); unsubRenovations?.(); };
   }, []);
-
-  const loadStoresFromFirebase = async () => {
-    try {
-      await auth.authStateReady();
-      if (!auth.currentUser) await signInAnonymously(auth);
-      const snapshot = await getDocs(collection(db, 'stores'));
-      const firebaseStores = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-      setStores(firebaseStores);
-    } catch (err) {
-      console.error('Firebase yükleme hatası:', err);
-      setStores([]);
-    }
-  };
-
-  const loadRenovations = async () => {
-    try {
-      const q = query(collection(db, 'renovations'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      setRenovations(snapshot.docs.map(d => ({ ...d.data(), id: d.id })));
-    } catch (err) {
-      console.error('Tadilat yükleme hatası:', err);
-    }
-  };
 
   const handleRenovationImageSelect = async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
     setUploadingRenovationImage(true);
     try {
       const compressed = await compressImage(file);
+      const isWebP = compressed.startsWith('data:image/webp');
       const blob = await (await fetch(compressed)).blob();
-      const fileName = `renovation_${Date.now()}_${Math.random().toString(36).substring(2)}.jpg`;
+      const ext = isWebP ? 'webp' : 'jpg';
+      const fileName = `renovation_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
       const storageRef = ref(storage, `renovation-images/${fileName}`);
       await uploadBytes(storageRef, blob);
       const url = await getDownloadURL(storageRef);
@@ -107,24 +106,29 @@ export default function StoreManagementApp() {
     }
   };
 
-  const compressImage = (file, maxSizeKB = 750) => {
+  const compressImage = (file) => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
       img.onload = () => {
-        const maxWidth = 1200;
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        canvas.width = img.width * ratio;
-        canvas.height = img.height * ratio;
+        const maxWidth = 1400;
+        const ratio = Math.min(1, maxWidth / img.width, maxWidth / img.height);
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        let quality = 0.85;
-        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-        while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.3) {
-          quality -= 0.1;
-          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const supportsWebP = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+        if (supportsWebP) {
+          resolve(canvas.toDataURL('image/webp', 0.82));
+        } else {
+          let quality = 0.85;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          while (dataUrl.length > 750 * 1024 * 1.37 && quality > 0.3) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          resolve(dataUrl);
         }
-        resolve(dataUrl);
       };
       img.src = URL.createObjectURL(file);
     });
@@ -132,12 +136,13 @@ export default function StoreManagementApp() {
 
   const uploadToFirebaseStorage = async (file, storeId, imageIndex) => {
     if (!file.type.startsWith('image/')) throw new Error('Sadece resim dosyası yükleyebilirsiniz');
-    if (file.size > 10 * 1024 * 1024) throw new Error("Dosya boyutu 10MB'dan büyük olamaz");
 
     const compressedDataUrl = await compressImage(file);
+    const isWebP = compressedDataUrl.startsWith('data:image/webp');
     const blob = await (await fetch(compressedDataUrl)).blob();
 
-    const fileName = `${storeId}_${imageIndex}_${Date.now()}_${Math.random().toString(36).substring(2)}.jpg`;
+    const ext = isWebP ? 'webp' : 'jpg';
+    const fileName = `${storeId}_${imageIndex}_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
     const storageRef = ref(storage, `store-images/${fileName}`);
 
     const progressKey = `${storeId}_${imageIndex}`;
@@ -174,14 +179,12 @@ export default function StoreManagementApp() {
     if (!selectedStore || !files.length) return;
     setUploading(true);
     try {
-      const updatedImages = [...(selectedStore.images || ['', '', '', '', ''])];
+      const updatedImages = [...(selectedStore.images || [])];
       let uploadCount = 0;
-      for (const file of files.slice(0, 5)) {
-        const emptyIndex = updatedImages.findIndex(img => !img?.trim());
-        if (emptyIndex === -1) break;
+      for (const file of files) {
+        const nextIndex = updatedImages.length;
         try {
-          await deleteStorageFile(updatedImages[emptyIndex]);
-          updatedImages[emptyIndex] = await uploadToFirebaseStorage(file, selectedStore.id, emptyIndex);
+          updatedImages.push(await uploadToFirebaseStorage(file, selectedStore.id, nextIndex));
           uploadCount++;
         } catch (e) {
           console.error(`Fotoğraf yükleme hatası (${file.name}):`, e);
@@ -247,14 +250,10 @@ export default function StoreManagementApp() {
         address: String(storeData.address || '').trim(),
         location: String(storeData.location || '').trim(),
         size: String(storeData.size || '').trim(),
-        images: (() => {
-          const arr = [...(storeData.images || ['', '', '', '', ''])];
-          while (arr.length < 5) arr.push('');
-          return arr.slice(0, 5).map(img => {
-            if (!img || typeof img !== 'string') return '';
-            return (img.includes('firebasestorage.googleapis.com') || img.startsWith('data:image/')) ? img : '';
-          });
-        })(),
+        images: (storeData.images || []).map(img => {
+          if (!img || typeof img !== 'string') return '';
+          return (img.includes('firebasestorage.googleapis.com') || img.startsWith('data:image/')) ? img : '';
+        }).filter((img, i, arr) => img || i < arr.findLastIndex(x => x) + 1),
         competitorBrands: (storeData.competitorBrands || []).filter(b => b?.trim()).map(b => String(b).trim()).slice(0, 10),
         notes: String(storeData.notes || '').trim().slice(0, 1000),
         lastUpdated: new Date().toISOString(),
@@ -925,10 +924,10 @@ export default function StoreManagementApp() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Mağaza Fotoğrafları</h3>
-                  {selectedStore && (selectedStore.images || []).filter(img => img?.trim()).length < 5 && (
+                  {selectedStore && (
                     <div className="mb-6">
                       <DragDropUpload onFilesUpload={handleMultipleImageUpload}
-                        maxFiles={5 - (selectedStore.images || []).filter(img => img?.trim()).length}
+                        maxFiles={20}
                         uploading={uploading} />
                     </div>
                   )}
