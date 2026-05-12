@@ -3,7 +3,7 @@ import { deleteObject, ref } from 'firebase/storage';
 import { storage } from '../services/firebase';
 import { ChevronLeft, ChevronRight, Trash } from './Icons';
 
-export default function StoreCard({ store, onEdit, setStores, saveStore }) {
+export default function StoreCard({ store, onEdit, onDelete, setStores, saveStore }) {
   const images = store.images || ['', '', '', '', ''];
   const competitorCount = store.competitorBrands?.filter(b => b.trim()).length || 0;
   const hasData = !!(store.size || store.images?.some(img => img?.trim()) || store.competitorBrands?.some(b => b?.trim()));
@@ -157,9 +157,16 @@ export default function StoreCard({ store, onEdit, setStores, saveStore }) {
               {hasData ? 'Son güncelleme' : 'Henüz düzenlenmemiş'}
               {hasData && <span>{store.lastUpdated ? new Date(store.lastUpdated).toLocaleDateString('tr-TR') : ''}</span>}
             </div>
-            <button onClick={() => onEdit(store.id)} className="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors hover-lift">
-              Düzenle
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => onEdit(store.id)} className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors hover-lift">
+                Düzenle
+              </button>
+              {onDelete && (
+                <button onClick={onDelete} className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors hover-lift" title="Mağazayı Sil">
+                  <Trash className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

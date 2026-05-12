@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addDoc, collection, doc, getDocs, orderBy, query, setDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, setDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
@@ -325,6 +325,45 @@ export default function StoreManagementApp() {
     if (result.success) { setLastSaved(new Date()); setTimeout(() => setLastSaved(null), 2000); }
   };
 
+  const handleDeleteStore = async (storeId) => {
+    if (!window.confirm('Bu mağazayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) return;
+    const store = stores.find(s => s.id === storeId);
+    try {
+      for (const imgUrl of (store?.images || [])) {
+        if (imgUrl?.includes('firebasestorage.googleapis.com')) {
+          try {
+            const decodedPath = decodeURIComponent(imgUrl.split('/o/')[1].split('?')[0]);
+            await deleteObject(ref(storage, decodedPath));
+          } catch { /* ignore */ }
+        }
+      }
+      await deleteDoc(doc(db, 'stores', storeId));
+      setStores(prev => prev.filter(s => s.id !== storeId));
+      if (selectedStore?.id === storeId) { setSelectedStore(null); setCurrentView('dashboard'); }
+    } catch (e) {
+      console.error('Mağaza silinemedi:', e);
+      alert('Mağaza silinirken hata oluştu.');
+    }
+  };
+
+  const handleDeleteRenovation = async (renovationId) => {
+    if (!window.confirm('Bu tadilat talebini silmek istediğinizden emin misiniz?')) return;
+    const renovation = renovations.find(r => r.id === renovationId);
+    try {
+      if (renovation?.imageUrl?.includes('firebasestorage.googleapis.com')) {
+        try {
+          const decodedPath = decodeURIComponent(renovation.imageUrl.split('/o/')[1].split('?')[0]);
+          await deleteObject(ref(storage, decodedPath));
+        } catch { /* ignore */ }
+      }
+      await deleteDoc(doc(db, 'renovations', renovationId));
+      setRenovations(prev => prev.filter(r => r.id !== renovationId));
+    } catch (e) {
+      console.error('Tadilat silinemedi:', e);
+      alert('Tadilat silinirken hata oluştu.');
+    }
+  };
+
   const getFilteredStores = () =>
     stores.filter(s => {
       const matchSearch = s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || s.address?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -515,6 +554,7 @@ export default function StoreManagementApp() {
                     key={store.id}
                     store={store}
                     onEdit={() => handleStoreSelection(store.id)}
+                    onDelete={() => handleDeleteStore(store.id)}
                     setStores={setStores}
                     saveStore={saveToFirebase}
                   />
@@ -705,7 +745,7 @@ export default function StoreManagementApp() {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {getFilteredRenovations().map((r) => (
-                      <RenovationCard key={r.id} renovation={r} />
+                      <RenovationCard key={r.id} renovation={r} onDelete={() => handleDeleteRenovation(r.id)} />
                     ))}
                   </div>
                   {getFilteredRenovations().length === 0 && (
@@ -1018,23 +1058,33 @@ export default function StoreManagementApp() {
 
               <div className="mt-6 bg-white rounded-xl shadow-sm p-6 hover-lift">
                 {selectedStore ? (
-                  <button onClick={handleSaveStore} disabled={saving}
-                    className="w-full h-15 flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed hover-lift"
-                    style={{ width: '100%', height: '60px' }}
-                    onMouseEnter={(e) => { if (!saving) e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}>
-                    <div className={`w-15 h-full flex items-center justify-center rounded-l-lg ${saving ? 'bg-gray-600' : lastSaved ? 'bg-green-700' : 'bg-gray-800'}`} style={{ width: '60px' }}>
-                      {saving
-                        ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        : lastSaved
-                          ? <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                          : <Save size={20} className="text-white" />
-                      }
-                    </div>
-                    <div className={`flex-1 h-full flex items-center justify-center rounded-r-lg font-semibold text-sm ${saving ? 'bg-gray-300 text-gray-600' : lastSaved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {saving ? 'KAYDEDİLİYOR' : lastSaved ? 'KAYDEDİLDİ' : 'KAYDET'}
-                    </div>
-                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={handleSaveStore} disabled={saving}
+                      className="flex-1 h-15 flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed hover-lift"
+                      style={{ height: '60px' }}
+                      onMouseEnter={(e) => { if (!saving) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}>
+                      <div className={`h-full flex items-center justify-center rounded-l-lg ${saving ? 'bg-gray-600' : lastSaved ? 'bg-green-700' : 'bg-gray-800'}`} style={{ width: '60px' }}>
+                        {saving
+                          ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          : lastSaved
+                            ? <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            : <Save size={20} className="text-white" />
+                        }
+                      </div>
+                      <div className={`flex-1 h-full flex items-center justify-center rounded-r-lg font-semibold text-sm ${saving ? 'bg-gray-300 text-gray-600' : lastSaved ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {saving ? 'KAYDEDİLİYOR' : lastSaved ? 'KAYDEDİLDİ' : 'KAYDET'}
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteStore(selectedStore.id)}
+                      className="flex items-center gap-2 px-5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-lg hover-lift"
+                      style={{ height: '60px' }}
+                    >
+                      <Trash size={18} />
+                      SİL
+                    </button>
+                  </div>
                 ) : (
                   <div className="text-center py-4"><p className="text-gray-500">Düzenlemek İçin Bir Mağaza Seçiniz</p></div>
                 )}
