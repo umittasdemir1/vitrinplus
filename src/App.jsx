@@ -31,6 +31,8 @@ export default function StoreManagementApp() {
   const [renovationSaving, setRenovationSaving] = useState(false);
   const [renovationImagePreview, setRenovationImagePreview] = useState('');
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
+  const [renovationSearch, setRenovationSearch] = useState('');
+  const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
 
   useEffect(() => {
     loadStoresFromFirebase();
@@ -331,6 +333,17 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
+  const getFilteredRenovations = () => {
+    const storeById = Object.fromEntries(stores.map(s => [s.id, s]));
+    return renovations.filter(r => {
+      const store = storeById[r.storeId];
+      const matchSearch = r.storeName?.toLowerCase().includes(renovationSearch.toLowerCase()) ||
+        r.aciklama?.toLowerCase().includes(renovationSearch.toLowerCase());
+      const matchLocation = renovationFilterLocation === 'all' || store?.location === renovationFilterLocation;
+      return matchSearch && matchLocation;
+    });
+  };
+
   const handleAddStore = async () => {
     if (!newStore.name.trim()) return;
     setAddingSaving(true);
@@ -626,21 +639,56 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-list' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">📋 Tadilat Talepleri</h2>
-                <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-                    {renovations.length} talep
-                  </span>
-                  <button
-                    onClick={() => setCurrentView('renovations-new')}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors hover-lift"
-                  >
-                    ➕ Yeni Talep
-                  </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Tadilat Talepleri</h2>
+
+              {/* Arama ve filtre */}
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6 hover-lift">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Talep Ara</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                      <input
+                        type="text"
+                        placeholder="Mağaza adı veya açıklama ara..."
+                        value={renovationSearch}
+                        onChange={(e) => setRenovationSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Şehir Filtresi</label>
+                    <select
+                      value={renovationFilterLocation}
+                      onChange={(e) => setRenovationFilterLocation(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">Tüm Şehirler</option>
+                      {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
 
+              {/* İstatistik kartları */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
+                {[
+                  { color: 'blue', icon: '🔨', label: 'Toplam Talep', value: renovations.length },
+                  { color: 'orange', icon: '📅', label: 'Bu Ay', value: renovations.filter(r => { const d = new Date(r.talepTarihi); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length },
+                  { color: 'green', icon: '📸', label: 'Fotoğraflı', value: renovations.filter(r => r.imageUrl).length },
+                  { color: 'purple', icon: '🏙️', label: 'Şehir Sayısı', value: new Set(renovations.map(r => stores.find(s => s.id === r.storeId)?.location).filter(Boolean)).size },
+                ].map(({ color, icon, label, value }) => (
+                  <div key={label} className="bg-white rounded-xl shadow-sm p-6 hover-lift">
+                    <div className="flex items-center">
+                      <div className={`p-3 bg-${color}-100 rounded-lg`}><span className="text-2xl">{icon}</span></div>
+                      <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Kart grid */}
               {renovations.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center hover-lift">
                   <div className="text-5xl mb-4">🔨</div>
@@ -654,11 +702,16 @@ export default function StoreManagementApp() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {renovations.map((r) => (
-                    <RenovationCard key={r.id} renovation={r} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {getFilteredRenovations().map((r) => (
+                      <RenovationCard key={r.id} renovation={r} />
+                    ))}
+                  </div>
+                  {getFilteredRenovations().length === 0 && (
+                    <div className="text-center py-12"><p className="text-gray-500 text-lg">Arama kriterlerinize uygun talep bulunamadı.</p></div>
+                  )}
+                </>
               )}
             </div>
           )}
