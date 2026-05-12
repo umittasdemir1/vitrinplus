@@ -94,8 +94,7 @@ export default function StoreManagementApp() {
         imageUrl: renovationForm.imageUrl || '',
         createdAt: new Date().toISOString(),
       };
-      const docRef = await addDoc(collection(db, 'renovations'), data);
-      setRenovations(prev => [{ ...data, id: docRef.id }, ...prev]);
+      await addDoc(collection(db, 'renovations'), data);
       setRenovationForm({ storeId: '', talepTarihi: '', aciklama: '', imageUrl: '' });
       setRenovationImagePreview('');
       setCurrentView('renovations-list');
@@ -261,12 +260,6 @@ export default function StoreManagementApp() {
         version: '2.0',
       };
       await setDoc(doc(db, 'stores', storeData.id), cleanData);
-      setStores(prev => {
-        const idx = prev.findIndex(s => s.id === storeData.id);
-        const updated = { ...storeData, ...cleanData };
-        if (idx >= 0) { const next = [...prev]; next[idx] = updated; return next; }
-        return [...prev, updated];
-      });
       return { success: true };
     } catch (e) {
       console.error('Firebase kaydetme hatası:', e);
@@ -337,7 +330,6 @@ export default function StoreManagementApp() {
         }
       }
       await deleteDoc(doc(db, 'stores', storeId));
-      setStores(prev => prev.filter(s => s.id !== storeId));
       if (selectedStore?.id === storeId) { setSelectedStore(null); setCurrentView('dashboard'); }
     } catch (e) {
       console.error('Mağaza silinemedi:', e);
@@ -356,7 +348,6 @@ export default function StoreManagementApp() {
         } catch { /* ignore */ }
       }
       await deleteDoc(doc(db, 'renovations', renovationId));
-      setRenovations(prev => prev.filter(r => r.id !== renovationId));
     } catch (e) {
       console.error('Tadilat silinemedi:', e);
       alert('Tadilat silinirken hata oluştu.');
@@ -397,7 +388,6 @@ export default function StoreManagementApp() {
         size: '',
       };
       await setDoc(doc(db, 'stores', id), storeDoc);
-      setStores(prev => [...prev, { id, ...storeDoc }]);
       setNewStore({ name: '', address: '', location: '' });
       setCurrentView('dashboard');
     } catch (e) {
