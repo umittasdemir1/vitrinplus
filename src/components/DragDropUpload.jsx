@@ -28,7 +28,7 @@ export default function DragDropUpload({ onFilesUpload, maxFiles = 5, uploading 
 
   return (
     <div
-      className={`drag-zone p-8 text-center rounded-xl cursor-pointer hover-lift ${isDragOver ? 'drag-over' : ''} ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`drag-zone p-8 text-center rounded-xl cursor-pointer ${isDragOver ? 'drag-over' : ''} ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

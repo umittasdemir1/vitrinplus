@@ -61,7 +61,7 @@ export default function StoreCard({ store, onEdit, onDelete, setStores, saveStor
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md min-h-[620px] flex flex-col hover-lift">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md min-h-[620px] flex flex-col">
         <div className="relative flex-shrink-0 h-[260px] w-full bg-gray-100 rounded-lg overflow-hidden group">
           {images[cardImageIndex]?.trim() ? (
             <>
@@ -158,11 +158,11 @@ export default function StoreCard({ store, onEdit, onDelete, setStores, saveStor
               {hasData && <span>{store.lastUpdated ? new Date(store.lastUpdated).toLocaleDateString('tr-TR') : ''}</span>}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => onEdit(store.id)} className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors hover-lift">
+              <button onClick={() => onEdit(store.id)} className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
                 Düzenle
               </button>
               {onDelete && (
-                <button onClick={onDelete} className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors hover-lift" title="Mağazayı Sil">
+                <button onClick={onDelete} className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors" title="Mağazayı Sil">
                   <Trash className="w-4 h-4" />
                 </button>
               )}

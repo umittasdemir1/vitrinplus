@@ -453,7 +453,7 @@ export default function StoreManagementApp() {
               { key: 'brands', label: '📊 Rakip İstatistikleri' },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
-                className={`w-full text-left p-3 rounded-lg transition-colors hover-lift ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                className={`w-full text-left p-3 rounded-lg transition-colors ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
                 {label}
               </button>
             ))}
@@ -462,7 +462,7 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                className={`w-full text-left p-3 rounded-lg transition-colors hover-lift ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={`w-full text-left p-3 rounded-lg transition-colors ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 🔨 Mağaza Tadilatları
               </button>
@@ -485,7 +485,7 @@ export default function StoreManagementApp() {
             </div>
 
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
-              className={`w-full text-left p-3 rounded-lg transition-colors hover-lift ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+              className={`w-full text-left p-3 rounded-lg transition-colors ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
               ➕ Yeni Mağaza Ekle
             </button>
           </nav>
@@ -511,7 +511,7 @@ export default function StoreManagementApp() {
           {currentView === 'dashboard' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Dashboard</h2>
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6 hover-lift">
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Ara</label>
@@ -539,7 +539,7 @@ export default function StoreManagementApp() {
                   { color: 'orange', icon: '🏙️', label: 'Şehir Sayısı', value: getUniqueLocations().length },
                   { color: 'purple', icon: '🎯', label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
                 ].map(({ color, icon, label, value }) => (
-                  <div key={label} className="bg-white rounded-xl shadow-sm p-6 hover-lift">
+                  <div key={label} className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-center">
                       <div className={`p-3 bg-${color}-100 rounded-lg`}><span className="text-2xl">{icon}</span></div>
                       <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
@@ -569,14 +569,14 @@ export default function StoreManagementApp() {
           {currentView === 'brands' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Rakip İstatistikleri</h2>
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6 hover-lift">
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
                     { from: 'red-500', to: 'red-600', textColor: 'red-100', icon: '🎯', label: 'Toplam Rakip Marka', value: getAllCompetitors().length },
                     { from: 'orange-500', to: 'orange-600', textColor: 'orange-100', icon: '📍', label: 'En Yaygın Rakip', value: getAllCompetitors()[0]?.name || 'Henüz Yok' },
                     { from: 'purple-500', to: 'purple-600', textColor: 'purple-100', icon: '🏪', label: 'Maks. Lokasyon', value: getAllCompetitors()[0]?.count || 0 },
                   ].map(({ from, to, textColor, icon, label, value }) => (
-                    <div key={label} className={`bg-gradient-to-r from-${from} to-${to} rounded-xl p-6 text-white hover-lift`}>
+                    <div key={label} className={`bg-gradient-to-r from-${from} to-${to} rounded-xl p-6 text-white`}>
                       <div className="flex items-center">
                         <div className="p-3 bg-white bg-opacity-20 rounded-lg"><span className="text-2xl">{icon}</span></div>
                         <div className="ml-4"><p className={`text-${textColor}`}>{label}</p><p className="text-3xl font-bold">{value}</p></div>
@@ -587,7 +587,7 @@ export default function StoreManagementApp() {
               </div>
 
               {getAllCompetitors().length > 0 ? (
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50">
                     <h3 className="text-lg font-semibold text-gray-800">Rakip Marka Listesi</h3>
                     <p className="text-sm text-gray-600 mt-1">Lokasyon sayısına göre sıralanmıştır</p>
@@ -665,11 +665,11 @@ export default function StoreManagementApp() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl shadow-sm p-12 text-center hover-lift">
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                   <div className="text-6xl mb-4">🎯</div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Henüz Rakip Marka Verisi Yok</h3>
                   <p className="text-gray-600 mb-4">Mağaza bilgileri bölümünden rakip marka ekleyerek bu raporu doldurun.</p>
-                  <button onClick={() => setCurrentView('management')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors hover-lift">
+                  <button onClick={() => setCurrentView('management')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Mağaza Bilgilerine Git
                   </button>
                 </div>
@@ -682,7 +682,7 @@ export default function StoreManagementApp() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Tadilat Talepleri</h2>
 
               {/* Arama ve filtre */}
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6 hover-lift">
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Talep Ara</label>
@@ -719,7 +719,7 @@ export default function StoreManagementApp() {
                   { color: 'green', icon: '📸', label: 'Fotoğraflı', value: renovations.filter(r => r.imageUrl).length },
                   { color: 'purple', icon: '🏙️', label: 'Şehir Sayısı', value: new Set(renovations.map(r => stores.find(s => s.id === r.storeId)?.location).filter(Boolean)).size },
                 ].map(({ color, icon, label, value }) => (
-                  <div key={label} className="bg-white rounded-xl shadow-sm p-6 hover-lift">
+                  <div key={label} className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-center">
                       <div className={`p-3 bg-${color}-100 rounded-lg`}><span className="text-2xl">{icon}</span></div>
                       <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
@@ -730,13 +730,13 @@ export default function StoreManagementApp() {
 
               {/* Kart grid */}
               {renovations.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm p-12 text-center hover-lift">
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                   <div className="text-5xl mb-4">🔨</div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
                     onClick={() => setCurrentView('renovations-new')}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors hover-lift"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Yeni Talep Oluştur
                   </button>
@@ -759,7 +759,7 @@ export default function StoreManagementApp() {
           {currentView === 'renovations-new' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">➕ Yeni Tadilat Talebi</h2>
-              <div className="bg-white rounded-xl shadow-sm p-6 hover-lift max-w-3xl">
+              <div className="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç *</label>
@@ -808,7 +808,7 @@ export default function StoreManagementApp() {
                         </button>
                       </div>
                     ) : (
-                      <label className={`drag-zone flex flex-col items-center justify-center h-36 rounded-xl cursor-pointer hover-lift ${uploadingRenovationImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <label className={`drag-zone flex flex-col items-center justify-center h-36 rounded-xl cursor-pointer ${uploadingRenovationImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <input
                           type="file"
                           accept="image/*"
@@ -838,7 +838,7 @@ export default function StoreManagementApp() {
                   <button
                     onClick={handleSaveRenovation}
                     disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.trim()}
-                    className="w-full h-[60px] flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed hover-lift rounded-lg overflow-hidden"
+                    className="w-full h-[60px] flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed rounded-lg overflow-hidden"
                   >
                     <div className={`w-[60px] h-full flex items-center justify-center ${renovationSaving ? 'bg-gray-600' : 'bg-gray-800'}`}>
                       {renovationSaving
@@ -858,7 +858,7 @@ export default function StoreManagementApp() {
           {currentView === 'add-store' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">➕ Yeni Mağaza Ekle</h2>
-              <div className="bg-white rounded-xl shadow-sm p-6 hover-lift max-w-2xl">
+              <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Adı *</label>
@@ -893,7 +893,7 @@ export default function StoreManagementApp() {
                   <button
                     onClick={handleAddStore}
                     disabled={addingSaving || !newStore.name.trim()}
-                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover-lift"
+                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingSaving ? 'Kaydediliyor...' : 'Mağaza Ekle'}
                   </button>
@@ -904,7 +904,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'management' && (
             <div>
-              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 hover-lift">
+              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç</label>
@@ -923,7 +923,7 @@ export default function StoreManagementApp() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl shadow-sm p-6 hover-lift">
+                <div className="bg-white rounded-xl shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Mağaza Fotoğrafları</h3>
                   {selectedStore && (selectedStore.images || []).filter(img => img?.trim()).length < 5 && (
                     <div className="mb-6">
@@ -1021,7 +1021,7 @@ export default function StoreManagementApp() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-6 hover-lift">
+                <div className="bg-white rounded-xl shadow-sm p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Marka Yönetimi</h3>
                   <div className="mb-6">
                     <h4 className="text-md font-medium text-gray-700 mb-3">Rakip Markalar</h4>
@@ -1030,7 +1030,7 @@ export default function StoreManagementApp() {
                         <div key={index} className="flex items-center gap-2 sm:gap-3">
                           <span className="text-sm text-gray-600 w-6 sm:w-8 flex-shrink-0">{index + 1}.</span>
                           <input type="text" value={selectedStore?.competitorBrands?.[index] || ''} onChange={(e) => updateCompetitorBrand(index, e.target.value)}
-                            className={`flex-1 p-2 sm:p-3 border rounded-lg focus:ring-2 focus:border-transparent text-sm sm:text-base transition-all hover-lift ${index === 0 ? 'border-blue-300 focus:ring-blue-500' : 'border-gray-300 focus:ring-red-500'}`} />
+                            className={`flex-1 p-2 sm:p-3 border rounded-lg focus:ring-2 focus:border-transparent text-sm sm:text-base transition-all ${index === 0 ? 'border-blue-300 focus:ring-blue-500' : 'border-gray-300 focus:ring-red-500'}`} />
                         </div>
                       ))}
                     </div>
@@ -1039,7 +1039,7 @@ export default function StoreManagementApp() {
                       <div className="flex flex-wrap gap-2">
                         {(selectedStore?.competitorBrands || []).filter(b => b.trim()).length > 0
                           ? (selectedStore?.competitorBrands || []).filter(b => b.trim()).map((brand, i) => (
-                              <span key={i} className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full hover-lift">{brand}</span>
+                              <span key={i} className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">{brand}</span>
                             ))
                           : <span className="text-sm text-gray-500">Henüz Rakip Marka Eklenmemiş</span>
                         }
@@ -1050,17 +1050,17 @@ export default function StoreManagementApp() {
                     <h4 className="text-md font-medium text-gray-700 mb-3">Notlar</h4>
                     <textarea value={selectedStore?.notes || ''} onChange={(e) => updateStore('notes', e.target.value)}
                       placeholder="Lokasyonunuzda mağaza satışlarınıza olumlu veya olumsuz etkisi olduğunu düşündüğünüz notlarınızı yazınız."
-                      rows={6} className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all hover-lift" />
+                      rows={6} className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all" />
                     <p className="text-xs text-gray-500 mt-2">*Bu Alana Yazılan Bilgiler Herkese Açık Şekilde Görüntülenmektedir.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 bg-white rounded-xl shadow-sm p-6 hover-lift">
+              <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
                 {selectedStore ? (
                   <div className="flex gap-3">
                     <button onClick={handleSaveStore} disabled={saving}
-                      className="flex-1 h-15 flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed hover-lift"
+                      className="flex-1 h-15 flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed"
                       style={{ height: '60px' }}
                       onMouseEnter={(e) => { if (!saving) e.currentTarget.style.transform = 'translateY(-1px)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}>
@@ -1078,7 +1078,7 @@ export default function StoreManagementApp() {
                     </button>
                     <button
                       onClick={() => handleDeleteStore(selectedStore.id)}
-                      className="flex items-center gap-2 px-5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-lg hover-lift"
+                      className="flex items-center gap-2 px-5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-lg"
                       style={{ height: '60px' }}
                     >
                       <Trash size={18} />

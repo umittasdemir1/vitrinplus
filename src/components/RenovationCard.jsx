@@ -5,7 +5,7 @@ export default function RenovationCard({ renovation, onDelete }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md flex flex-col hover-lift">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md flex flex-col">
         {/* Fotoğraf alanı */}
         <div
           className="relative h-[200px] w-full bg-gray-100 overflow-hidden group cursor-pointer flex-shrink-0"
