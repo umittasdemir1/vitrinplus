@@ -577,7 +577,7 @@ export default function StoreManagementApp() {
                     <div key={label} className={`bg-gradient-to-r from-${from} to-${to} rounded-xl p-6 text-white`}>
                       <div className="flex items-center">
                         <div className="p-3 bg-white bg-opacity-20 rounded-lg"><span className="text-2xl">{icon}</span></div>
-                        <div className="ml-4"><p className="text-white/70 text-sm">{label}</p><p className="text-3xl font-bold text-white">{value}</p></div>
+                        <div className="ml-4"><p className="text-gray-800 text-sm">{label}</p><p className="text-3xl font-bold text-gray-900">{value}</p></div>
                       </div>
                     </div>
                   ))}
