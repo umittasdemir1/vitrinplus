@@ -570,14 +570,14 @@ export default function StoreManagementApp() {
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
-                    { from: 'red-500', to: 'red-600', textColor: 'red-100', icon: '🎯', label: 'Toplam Rakip Marka', value: getAllCompetitors().length },
-                    { from: 'orange-500', to: 'orange-600', textColor: 'orange-100', icon: '📍', label: 'En Yaygın Rakip', value: getAllCompetitors()[0]?.name || 'Henüz Yok' },
-                    { from: 'purple-500', to: 'purple-600', textColor: 'purple-100', icon: '🏪', label: 'Maks. Lokasyon', value: getAllCompetitors()[0]?.count || 0 },
-                  ].map(({ from, to, textColor, icon, label, value }) => (
+                    { from: 'red-500',    to: 'red-600',    icon: '🎯', label: 'Toplam Rakip Marka', value: getAllCompetitors().length },
+                    { from: 'orange-500', to: 'orange-600', icon: '📍', label: 'En Yaygın Rakip',    value: getAllCompetitors()[0]?.name || 'Henüz Yok' },
+                    { from: 'purple-500', to: 'purple-600', icon: '🏪', label: 'Maks. Lokasyon',     value: getAllCompetitors()[0]?.count || 0 },
+                  ].map(({ from, to, icon, label, value }) => (
                     <div key={label} className={`bg-gradient-to-r from-${from} to-${to} rounded-xl p-6 text-white`}>
                       <div className="flex items-center">
                         <div className="p-3 bg-white bg-opacity-20 rounded-lg"><span className="text-2xl">{icon}</span></div>
-                        <div className="ml-4"><p className={`text-${textColor}`}>{label}</p><p className="text-3xl font-bold">{value}</p></div>
+                        <div className="ml-4"><p className="text-white text-opacity-80 text-sm">{label}</p><p className="text-3xl font-bold text-white">{value}</p></div>
                       </div>
                     </div>
                   ))}
