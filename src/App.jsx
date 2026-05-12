@@ -449,13 +449,7 @@ export default function StoreManagementApp() {
               </svg>
             </button>
             <div className="flex-1 flex justify-center items-center gap-3">
-              <img
-                src="https://www.bluemint.com/Themes/BluemintTheme/Content/images/logo.svg"
-                alt="BlueMint Logo"
-                className="h-10"
-                onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }}
-              />
-              <div className="text-3xl font-bold text-blue-600" style={{ display: 'none' }}>🏪</div>
+              <div className="text-3xl font-bold text-blue-600">🏪</div>
             </div>
             <div className="lg:hidden w-10" />
           </div>
