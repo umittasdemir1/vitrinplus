@@ -4,6 +4,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
+import { DashboardIcon, BrandsIcon, RenovationIcon, StoreIcon, CheckIcon, PlusIcon } from './components/CustomIcons';
 import DragDropUpload from './components/DragDropUpload';
 import ProgressBar from './components/ProgressBar';
 import StoreCard from './components/StoreCard';
@@ -440,12 +441,13 @@ export default function StoreManagementApp() {
         <div className="p-4 border-b border-gray-200">
           <nav className="space-y-1">
             {[
-              { key: 'dashboard', label: '📊 Dashboard' },
-              { key: 'management', label: '🏪 Mağaza Bilgileri' },
-              { key: 'brands', label: '📊 Rakip İstatistikleri' },
-            ].map(({ key, label }) => (
+              { key: 'dashboard',  label: 'Dashboard',            Icon: DashboardIcon },
+              { key: 'management', label: 'Mağaza Bilgileri',     Icon: StoreIcon },
+              { key: 'brands',     label: 'Rakip İstatistikleri', Icon: BrandsIcon },
+            ].map(({ key, label, Icon }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <Icon size={20} className="flex-shrink-0" />
                 {label}
               </button>
             ))}
@@ -454,31 +456,35 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
-                🔨 Mağaza Tadilatları
+                <RenovationIcon size={20} className="flex-shrink-0" />
+                Mağaza Tadilatları
               </button>
               {currentView.startsWith('renovations') && (
                 <div className="ml-3 mt-1 space-y-1 border-l-2 border-blue-200 pl-3">
                   <button
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${currentView === 'renovations-list' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-list' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
-                    📋 Talepler
+                    <CheckIcon size={16} className="flex-shrink-0" />
+                    Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${currentView === 'renovations-new' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-new' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
-                    ➕ Yeni Talep
+                    <PlusIcon size={16} className="flex-shrink-0" />
+                    Yeni Talep
                   </button>
                 </div>
               )}
             </div>
 
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
-              className={`w-full text-left p-3 rounded-lg transition-colors ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-              ➕ Yeni Mağaza Ekle
+              className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+              <PlusIcon size={20} className="flex-shrink-0" />
+              Yeni Mağaza Ekle
             </button>
           </nav>
         </div>
