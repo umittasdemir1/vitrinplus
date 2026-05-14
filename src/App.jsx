@@ -815,7 +815,7 @@ export default function StoreManagementApp() {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {getFilteredRenovations().map((r) => (
-                      <RenovationCard key={r.id} renovation={r} onEdit={() => handleOpenEditRenovation(r)} onDelete={() => handleDeleteRenovation(r.id)} />
+                      <RenovationCard key={r.id} renovation={{ ...r, location: stores.find(s => s.id === r.storeId)?.location || r.location || '' }} onEdit={() => handleOpenEditRenovation(r)} onDelete={() => handleDeleteRenovation(r.id)} />
                     ))}
                   </div>
                   {getFilteredRenovations().length === 0 && (
