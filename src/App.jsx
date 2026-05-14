@@ -403,8 +403,8 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
-  const titleCaseTR = (str) => str.replace(/(^|[\s])(\S)/g, (_, space, char) =>
-    space + char.toLocaleUpperCase('tr-TR')
+  const titleCaseTR = (str) => str.replace(/(^|[\s])(\S)(\S*)/g, (_, space, first, rest) =>
+    space + first.toLocaleUpperCase('tr-TR') + rest.toLocaleLowerCase('tr-TR')
   );
 
   const normTR = (str) => (str || '')
