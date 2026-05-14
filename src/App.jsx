@@ -843,7 +843,7 @@ export default function StoreManagementApp() {
                               updated[i] = e.target.value;
                               return { ...prev, aciklama: updated };
                             })}
-                            placeholder={`Madde ${i + 1}...`}
+                            placeholder=""
                             className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           {renovationForm.aciklama.length > 1 && (
@@ -1210,7 +1210,7 @@ export default function StoreManagementApp() {
                     <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
                     <input type="text" value={item}
                       onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = e.target.value; return { ...prev, aciklama: u }; })}
-                      placeholder={`Madde ${i + 1}...`}
+                      placeholder=""
                       className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     {renovationForm.aciklama.length > 1 && (
                       <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
