@@ -525,7 +525,7 @@ export default function StoreManagementApp() {
         <div className="p-3">
           <nav className="space-y-0.5">
             {[
-              { key: 'dashboard',  label: 'Dashboard',            Icon: LayoutDashboard },
+              { key: 'dashboard',  label: 'Ana Sayfa',            Icon: LayoutDashboard },
               { key: 'management', label: 'Mağaza Bilgileri',     Icon: Store },
               { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
@@ -596,7 +596,7 @@ export default function StoreManagementApp() {
         <div className="p-6 max-w-6xl mx-auto pb-20">
           {currentView === 'dashboard' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Ana Sayfa</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
