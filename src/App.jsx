@@ -530,8 +530,8 @@ export default function StoreManagementApp() {
               { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
-                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-                <Icon size={18} className="flex-shrink-0" />
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+                <Icon size={32} className="flex-shrink-0" />
                 {label}
               </button>
             ))}
@@ -540,25 +540,25 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => setRenovationMenuOpen(o => !o)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
               >
-                <PaintRoller size={18} className="flex-shrink-0" />
+                <PaintRoller size={32} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
               {(renovationMenuOpen || currentView.startsWith('renovations')) && (
                 <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-3">
                   <button
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'renovations-list' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'renovations-list' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <List size={18} className="flex-shrink-0" />
+                    <List size={32} className="flex-shrink-0" />
                     Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <ListPlus size={18} className="flex-shrink-0" />
+                    <ListPlus size={32} className="flex-shrink-0" />
                     Yeni Talep
                   </button>
                 </div>
@@ -568,14 +568,14 @@ export default function StoreManagementApp() {
             <div className="my-2 border-t border-gray-100" />
 
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-              <MapPinPlus size={18} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <MapPinPlus size={32} className="flex-shrink-0" />
               Yeni Mağaza Ekle
             </button>
 
             <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-              <SquarePen size={18} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <SquarePen size={32} className="flex-shrink-0" />
               Mağaza Düzenle
             </button>
           </nav>
@@ -1246,7 +1246,7 @@ export default function StoreManagementApp() {
                       className="flex items-center gap-2 px-5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-lg"
                       style={{ height: '60px' }}
                     >
-                      <Trash size={18} />
+                      <Trash size={32} />
                       SİL
                     </button>
                   </div>
