@@ -519,7 +519,7 @@ export default function StoreManagementApp() {
                     Talepler
                   </button>
                   <button
-                    onClick={() => { setCurrentView('renovations-new'); setSidebarOpen(false); }}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-new' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
                     <PlusIcon size={16} className="flex-shrink-0" />
@@ -783,7 +783,7 @@ export default function StoreManagementApp() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
-                    onClick={() => setCurrentView('renovations-new')}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); }}
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Yeni Talep Oluştur
