@@ -530,8 +530,8 @@ export default function StoreManagementApp() {
               { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
-                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-                <Icon size={32} className="flex-shrink-0" />
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+                <Icon size={32} strokeWidth={1.25} className="flex-shrink-0" />
                 {label}
               </button>
             ))}
@@ -540,25 +540,25 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => setRenovationMenuOpen(o => !o)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
               >
-                <PaintRoller size={32} className="flex-shrink-0" />
+                <PaintRoller size={32} strokeWidth={1.25} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
               {(renovationMenuOpen || currentView.startsWith('renovations')) && (
                 <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-3">
                   <button
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'renovations-list' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'renovations-list' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <List size={32} className="flex-shrink-0" />
+                    <List size={32} strokeWidth={1.25} className="flex-shrink-0" />
                     Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <ListPlus size={32} className="flex-shrink-0" />
+                    <ListPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
                     Yeni Talep
                   </button>
                 </div>
@@ -568,14 +568,14 @@ export default function StoreManagementApp() {
             <div className="my-2 border-t border-gray-100" />
 
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-              <MapPinPlus size={32} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <MapPinPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
               Yeni Mağaza Ekle
             </button>
 
             <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-base ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
-              <SquarePen size={32} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <SquarePen size={32} strokeWidth={1.25} className="flex-shrink-0" />
               Mağaza Düzenle
             </button>
           </nav>
