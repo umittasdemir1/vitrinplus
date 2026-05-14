@@ -517,21 +517,21 @@ export default function StoreManagementApp() {
     <div className="min-h-screen bg-gray-50 flex">
       {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out min-h-screen`}>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">Vitrin+</h1>
-          <p className="text-sm text-gray-600 mt-1">Mağaza Yönetim Sistemi</p>
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white border-r border-gray-100 shadow-sm transform transition-transform duration-300 ease-in-out min-h-screen`}>
+        <div className="px-6 py-5 border-b border-gray-100">
+          <h1 className="text-xl font-bold tracking-tight text-gray-900">Vitrin+</h1>
+          <p className="text-xs text-gray-400 mt-0.5 tracking-wide uppercase">Mağaza Yönetim Sistemi</p>
         </div>
-        <div className="p-4 border-b border-gray-200">
-          <nav className="space-y-1">
+        <div className="p-3">
+          <nav className="space-y-0.5">
             {[
               { key: 'dashboard',  label: 'Dashboard',            Icon: LayoutDashboard },
               { key: 'management', label: 'Mağaza Bilgileri',     Icon: Store },
               { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
-                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-                <Icon size={20} className="flex-shrink-0" />
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+                <Icon size={18} className="flex-shrink-0" />
                 {label}
               </button>
             ))}
@@ -540,40 +540,42 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => setRenovationMenuOpen(o => !o)}
-                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
               >
-                <PaintRoller size={20} className="flex-shrink-0" />
+                <PaintRoller size={18} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
               {(renovationMenuOpen || currentView.startsWith('renovations')) && (
-                <div className="ml-3 mt-1 space-y-1 border-l-2 border-blue-200 pl-3">
+                <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-3">
                   <button
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'renovations-list' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'renovations-list' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <List size={20} className="flex-shrink-0" />
+                    <List size={18} className="flex-shrink-0" />
                     Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'renovations-new' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
-                    <ListPlus size={20} className="flex-shrink-0" />
+                    <ListPlus size={18} className="flex-shrink-0" />
                     Yeni Talep
                   </button>
                 </div>
               )}
             </div>
 
+            <div className="my-2 border-t border-gray-100" />
+
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
-              className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <MapPinPlus size={20} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <MapPinPlus size={18} className="flex-shrink-0" />
               Yeni Mağaza Ekle
             </button>
 
             <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
-              className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'store-edit' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <SquarePen size={20} className="flex-shrink-0" />
+              className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-3 text-sm ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <SquarePen size={18} className="flex-shrink-0" />
               Mağaza Düzenle
             </button>
           </nav>
