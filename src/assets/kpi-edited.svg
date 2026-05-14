@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="110" height="110" version="1.0" id="checklist">
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 110 110" width="110" height="110" version="1.0" id="checklist">
   <path fill="#FFF" d="M23 26.84A3.84 3.84 0 0 1 26.84 23H55l16 13.44v46.72A3.84 3.84 0 0 1 67.16 87H26.84A3.84 3.84 0 0 1 23 83.16V26.84z"></path>
   <path fill="#F0F1F1" d="M55 23v9.6a3.84 3.84 0 0 0 3.84 3.84H71L55 23z"></path>
   <path fill="#F4D0A1" d="M77 41.5 82 31l5 10.5V80H77z"></path>
