@@ -36,6 +36,7 @@ export default function StoreManagementApp() {
   const [renovationSearch, setRenovationSearch] = useState('');
   const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
   const [editingRenovation, setEditingRenovation] = useState(null);
+  const [renovationMenuOpen, setRenovationMenuOpen] = useState(false);
 
   useEffect(() => {
     let unsubStores, unsubRenovations;
@@ -538,26 +539,26 @@ export default function StoreManagementApp() {
             {/* Hiyerarşik: Tadilatlar */}
             <div>
               <button
-                onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
+                onClick={() => setRenovationMenuOpen(o => !o)}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 <PaintRoller size={20} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
-              {currentView.startsWith('renovations') && (
+              {(renovationMenuOpen || currentView.startsWith('renovations')) && (
                 <div className="ml-3 mt-1 space-y-1 border-l-2 border-blue-200 pl-3">
                   <button
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-list' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'renovations-list' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
                   >
-                    <List size={16} className="flex-shrink-0" />
+                    <List size={20} className="flex-shrink-0" />
                     Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-new' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'renovations-new' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
                   >
-                    <ListPlus size={16} className="flex-shrink-0" />
+                    <ListPlus size={20} className="flex-shrink-0" />
                     Yeni Talep
                   </button>
                 </div>
