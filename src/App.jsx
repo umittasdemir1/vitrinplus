@@ -9,6 +9,7 @@ import kpiStore from './assets/kpi-store.svg';
 import kpiEdited from './assets/kpi-edited.svg';
 import kpiCity from './assets/kpi-city.svg';
 import kpiCompetitor from './assets/kpi-competitor.svg';
+import kpiNetwork from './assets/kpi-network.svg';
 import DragDropUpload from './components/DragDropUpload';
 import ProgressBar from './components/ProgressBar';
 import StoreCard from './components/StoreCard';
@@ -662,14 +663,14 @@ export default function StoreManagementApp() {
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
-                    { from: 'red-500',    to: 'red-600',    icon: '🎯', label: 'Toplam Rakip Marka', value: getAllCompetitors().length },
-                    { from: 'orange-500', to: 'orange-600', icon: '📍', label: 'En Yaygın Rakip',    value: getAllCompetitors()[0]?.name || 'Henüz Yok' },
-                    { from: 'purple-500', to: 'purple-600', icon: '🏪', label: 'Maks. Lokasyon',     value: getAllCompetitors()[0]?.count || 0 },
-                  ].map(({ from, to, icon, label, value }) => (
-                    <div key={label} className={`bg-gradient-to-r from-${from} to-${to} rounded-xl p-6 text-white`}>
-                      <div className="flex items-center">
-                        <div className="p-3 bg-white bg-opacity-20 rounded-lg"><span className="text-2xl">{icon}</span></div>
-                        <div className="ml-4"><p className="text-gray-800 text-sm">{label}</p><p className="text-3xl font-bold text-gray-900">{value}</p></div>
+                    { svg: kpiCompetitor, label: 'Toplam Rakip Marka', value: getAllCompetitors().length },
+                    { svg: kpiNetwork,    label: 'En Yaygın Rakip',    value: getAllCompetitors()[0]?.name || 'Henüz Yok' },
+                    { svg: kpiCity,       label: 'Maks. Lokasyon',     value: getAllCompetitors()[0]?.count || 0 },
+                  ].map(({ svg, label, value }) => (
+                    <div key={label} className="bg-white rounded-xl shadow-sm p-6">
+                      <div className="flex items-center gap-4">
+                        <img src={svg} alt={label} className="w-12 h-12 flex-shrink-0" />
+                        <div><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
                       </div>
                     </div>
                   ))}
