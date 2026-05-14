@@ -565,8 +565,6 @@ export default function StoreManagementApp() {
               )}
             </div>
 
-            <div className="my-2 border-t border-gray-100" />
-
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
               className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
               <MapPinPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
