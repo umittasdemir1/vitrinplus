@@ -454,11 +454,24 @@ export default function StoreManagementApp() {
     if (!storeEditForm.id || !storeEditForm.name.trim()) return;
     setStoreEditSaving(true);
     try {
+      const newName = storeEditForm.name.trim();
+      const newLocation = storeEditForm.location.trim();
+      const newAddress = storeEditForm.address.trim();
+
       await updateDoc(doc(db, 'stores', storeEditForm.id), {
-        name: storeEditForm.name.trim(),
-        location: storeEditForm.location.trim(),
-        address: storeEditForm.address.trim(),
+        name: newName,
+        location: newLocation,
+        address: newAddress,
       });
+
+      // Bu mağazaya ait tüm talepleri de güncelle
+      const storeRenovations = renovations.filter(r => r.storeId === storeEditForm.id);
+      await Promise.all(storeRenovations.map(r =>
+        updateDoc(doc(db, 'renovations', r.id), {
+          storeName: newName,
+          location: newLocation,
+        })
+      ));
     } catch (e) {
       console.error('Mağaza güncellenemedi:', e);
     } finally {
