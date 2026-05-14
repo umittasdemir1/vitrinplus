@@ -403,6 +403,10 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
+  const titleCaseTR = (str) => str.replace(/(^|[\s])(\S)/g, (_, space, char) =>
+    space + char.toLocaleUpperCase('tr-TR')
+  );
+
   const normTR = (str) => (str || '')
     .replace(/İ/g, 'i').replace(/Ğ/g, 'g').replace(/Ü/g, 'u')
     .replace(/Ş/g, 's').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
@@ -862,7 +866,7 @@ export default function StoreManagementApp() {
                             value={item}
                             onChange={(e) => setRenovationForm(prev => {
                               const updated = [...prev.aciklama];
-                              updated[i] = e.target.value;
+                              updated[i] = titleCaseTR(e.target.value);
                               return { ...prev, aciklama: updated };
                             })}
                             placeholder=""
@@ -1292,7 +1296,7 @@ export default function StoreManagementApp() {
                   <div key={i} className="flex items-center gap-2">
                     <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
                     <input type="text" value={item}
-                      onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = e.target.value; return { ...prev, aciklama: u }; })}
+                      onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = titleCaseTR(e.target.value); return { ...prev, aciklama: u }; })}
                       placeholder=""
                       className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     {renovationForm.aciklama.length > 1 && (
