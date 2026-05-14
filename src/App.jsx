@@ -540,7 +540,7 @@ export default function StoreManagementApp() {
             <div>
               <button
                 onClick={() => setRenovationMenuOpen(o => !o)}
-                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') || renovationMenuOpen ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 <PaintRoller size={20} className="flex-shrink-0" />
                 Mağaza Tadilatları
