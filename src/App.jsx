@@ -529,7 +529,7 @@ export default function StoreManagementApp() {
               { key: 'management', label: 'Mağaza Bilgileri',     Icon: Store },
               { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
-              <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
+              <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); setRenovationMenuOpen(false); }}
                 className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === key ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
                 <Icon size={32} strokeWidth={1.25} className="flex-shrink-0" />
                 {label}
@@ -565,13 +565,13 @@ export default function StoreManagementApp() {
               )}
             </div>
 
-            <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
+            <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); setRenovationMenuOpen(false); }}
               className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'add-store' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
               <MapPinPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
               Yeni Mağaza Ekle
             </button>
 
-            <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
+            <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); setRenovationMenuOpen(false); }}
               className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'store-edit' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
               <SquarePen size={32} strokeWidth={1.25} className="flex-shrink-0" />
               Mağaza Düzenle
