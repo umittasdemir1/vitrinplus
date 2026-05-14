@@ -367,13 +367,12 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
-  const normTR = (str) => (str || '').toLowerCase()
-    .replace(/ı/g, 'i').replace(/İ/g, 'i')
-    .replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
-    .replace(/ü/g, 'u').replace(/Ü/g, 'u')
-    .replace(/ş/g, 's').replace(/Ş/g, 's')
-    .replace(/ö/g, 'o').replace(/Ö/g, 'o')
-    .replace(/ç/g, 'c').replace(/Ç/g, 'c');
+  const normTR = (str) => (str || '')
+    .replace(/İ/g, 'i').replace(/Ğ/g, 'g').replace(/Ü/g, 'u')
+    .replace(/Ş/g, 's').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+    .toLowerCase()
+    .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+    .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
 
   const getFilteredRenovations = () => {
     const storeById = Object.fromEntries(stores.map(s => [s.id, s]));

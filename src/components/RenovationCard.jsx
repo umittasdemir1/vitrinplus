@@ -27,7 +27,7 @@ export default function RenovationCard({ renovation, onDelete }) {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
         {/* Fotoğraf alanı — sabit yükseklik */}
         <div
-          className="relative h-[200px] w-full bg-gray-100 overflow-hidden group cursor-pointer flex-shrink-0"
+          className="relative h-[260px] w-full bg-gray-200 overflow-hidden group cursor-pointer flex-shrink-0"
           onClick={() => currentImage && setShowPhotoModal(true)}
         >
           {currentImage ? (
@@ -66,7 +66,7 @@ export default function RenovationCard({ renovation, onDelete }) {
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
               <div className="text-center text-gray-400">
                 <svg className="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 12V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V12z" />
