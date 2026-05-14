@@ -28,7 +28,7 @@ export default function StoreManagementApp() {
   const [newStore, setNewStore] = useState({ name: '', address: '', location: '' });
   const [addingSaving, setAddingSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
-  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: '', imageUrls: [] });
+  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
   const [renovationSaving, setRenovationSaving] = useState(false);
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
   const [renovationSearch, setRenovationSearch] = useState('');
@@ -84,7 +84,8 @@ export default function StoreManagementApp() {
   };
 
   const handleSaveRenovation = async () => {
-    if (!renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.trim()) return;
+    const validItems = renovationForm.aciklama.map(s => s.trim()).filter(Boolean);
+    if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
     setRenovationSaving(true);
     try {
       const store = stores.find(s => s.id === renovationForm.storeId);
@@ -93,12 +94,12 @@ export default function StoreManagementApp() {
         storeName: store?.name || renovationForm.storeId,
         location: store?.location || '',
         talepTarihi: renovationForm.talepTarihi,
-        aciklama: renovationForm.aciklama.trim(),
+        aciklama: validItems,
         imageUrls: renovationForm.imageUrls,
         createdAt: new Date().toISOString(),
       };
       await addDoc(collection(db, 'renovations'), data);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: '', imageUrls: [] });
+      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
       setCurrentView('renovations-list');
     } catch (err) {
       console.error('Tadilat kaydetme hatası:', err);
@@ -366,12 +367,25 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
+  const normTR = (str) => (str || '').toLowerCase()
+    .replace(/ı/g, 'i').replace(/İ/g, 'i')
+    .replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
+    .replace(/ü/g, 'u').replace(/Ü/g, 'u')
+    .replace(/ş/g, 's').replace(/Ş/g, 's')
+    .replace(/ö/g, 'o').replace(/Ö/g, 'o')
+    .replace(/ç/g, 'c').replace(/Ç/g, 'c');
+
   const getFilteredRenovations = () => {
     const storeById = Object.fromEntries(stores.map(s => [s.id, s]));
+    const q = normTR(renovationSearch);
     return renovations.filter(r => {
       const store = storeById[r.storeId];
-      const matchSearch = r.storeName?.toLowerCase().includes(renovationSearch.toLowerCase()) ||
-        r.aciklama?.toLowerCase().includes(renovationSearch.toLowerCase());
+      const aciklamaText = Array.isArray(r.aciklama)
+        ? r.aciklama.join(' ')
+        : (r.aciklama || '');
+      const matchSearch = !q ||
+        normTR(r.storeName).includes(q) ||
+        normTR(aciklamaText).includes(q);
       const matchLocation = renovationFilterLocation === 'all' || store?.location === renovationFilterLocation;
       return matchSearch && matchLocation;
     });
@@ -716,7 +730,7 @@ export default function StoreManagementApp() {
                 {[
                   { color: 'blue', icon: '🔨', label: 'Toplam Talep', value: renovations.length },
                   { color: 'orange', icon: '📅', label: 'Bu Ay', value: renovations.filter(r => { const d = new Date(r.talepTarihi); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length },
-                  { color: 'green', icon: '📸', label: 'Fotoğraflı', value: renovations.filter(r => r.imageUrl).length },
+                  { color: 'green', icon: '📸', label: 'Fotoğraflı', value: renovations.filter(r => r.imageUrls?.length || r.imageUrl).length },
                   { color: 'purple', icon: '🏙️', label: 'Şehir Sayısı', value: new Set(renovations.map(r => stores.find(s => s.id === r.storeId)?.location).filter(Boolean)).size },
                 ].map(({ color, icon, label, value }) => (
                   <div key={label} className="bg-white rounded-xl shadow-sm p-6">
@@ -782,14 +796,43 @@ export default function StoreManagementApp() {
                     />
                   </div>
                   <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Talep Açıklaması *</label>
-                    <textarea
-                      value={renovationForm.aciklama}
-                      onChange={(e) => setRenovationForm(prev => ({ ...prev, aciklama: e.target.value }))}
-                      placeholder="Tadilat talebini detaylı açıklayınız..."
-                      rows={4}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Talep Maddeleri *</label>
+                    <div className="space-y-2">
+                      {renovationForm.aciklama.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
+                          <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => setRenovationForm(prev => {
+                              const updated = [...prev.aciklama];
+                              updated[i] = e.target.value;
+                              return { ...prev, aciklama: updated };
+                            })}
+                            placeholder={`Madde ${i + 1}...`}
+                            className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {renovationForm.aciklama.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
+                              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
+                        className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-dashed border-blue-300 w-full justify-center"
+                      >
+                        <PlusIcon size={16} className="text-blue-600" /> Madde Ekle
+                      </button>
+                    </div>
                   </div>
 
                   {/* Fotoğraf upload */}
@@ -839,7 +882,7 @@ export default function StoreManagementApp() {
                 <div className="mt-6">
                   <button
                     onClick={handleSaveRenovation}
-                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.trim()}
+                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.trim())}
                     className="w-full h-[60px] flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed rounded-lg overflow-hidden"
                   >
                     <div className={`w-[60px] h-full flex items-center justify-center ${renovationSaving ? 'bg-gray-600' : 'bg-gray-800'}`}>
