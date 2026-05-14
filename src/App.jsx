@@ -556,7 +556,7 @@ export default function StoreManagementApp() {
         <div className="p-6 max-w-6xl mx-auto pb-20">
           {currentView === 'dashboard' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Dashboard</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><DashboardIcon size={24} className="text-gray-800" /> Dashboard</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -616,7 +616,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'brands' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Rakip İstatistikleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><BrandsIcon size={24} className="text-gray-800" /> Rakip İstatistikleri</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
@@ -714,7 +714,7 @@ export default function StoreManagementApp() {
                 </div>
               ) : (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                  <div className="text-6xl mb-4">🎯</div>
+                  <div className="flex justify-center mb-4"><BrandsIcon size={48} className="text-gray-300" /></div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Henüz Rakip Marka Verisi Yok</h3>
                   <p className="text-gray-600 mb-4">Mağaza bilgileri bölümünden rakip marka ekleyerek bu raporu doldurun.</p>
                   <button onClick={() => setCurrentView('management')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
@@ -727,7 +727,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-list' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Tadilat Talepleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><RenovationIcon size={24} className="text-gray-800" /> Tadilat Talepleri</h2>
 
               {/* Arama ve filtre */}
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -764,7 +764,7 @@ export default function StoreManagementApp() {
               {/* Kart grid */}
               {renovations.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                  <div className="text-5xl mb-4">🔨</div>
+                  <div className="flex justify-center mb-4"><RenovationIcon size={48} className="text-gray-300" /></div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
@@ -791,7 +791,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-new' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">➕ Yeni Tadilat Talebi</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><PlusIcon size={24} className="text-gray-800" /> Yeni Tadilat Talebi</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
@@ -917,7 +917,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'add-store' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">➕ Yeni Mağaza Ekle</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><PlusIcon size={24} className="text-gray-800" /><StoreIcon size={24} className="text-gray-800" /> Yeni Mağaza Ekle</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
                   <div>
