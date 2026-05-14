@@ -759,22 +759,7 @@ export default function StoreManagementApp() {
                 </div>
               </div>
 
-              {/* İstatistik kartları */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
-                {[
-                  { color: 'blue', icon: '🔨', label: 'Toplam Talep', value: renovations.length },
-                  { color: 'orange', icon: '📅', label: 'Bu Ay', value: renovations.filter(r => { const d = new Date(r.talepTarihi); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length },
-                  { color: 'green', icon: '📸', label: 'Fotoğraflı', value: renovations.filter(r => r.imageUrls?.length || r.imageUrl).length },
-                  { color: 'purple', icon: '🏙️', label: 'Şehir Sayısı', value: new Set(renovations.map(r => stores.find(s => s.id === r.storeId)?.location).filter(Boolean)).size },
-                ].map(({ color, icon, label, value }) => (
-                  <div key={label} className="bg-white rounded-xl shadow-sm p-6">
-                    <div className="flex items-center">
-                      <div className={`p-3 bg-${color}-100 rounded-lg`}><span className="text-2xl">{icon}</span></div>
-                      <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+
 
               {/* Kart grid */}
               {renovations.length === 0 ? (
