@@ -4,7 +4,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
-import { DashboardIcon, BrandsIcon, RenovationIcon, StoreIcon, CheckIcon, PlusIcon } from './components/CustomIcons';
+import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen } from 'lucide-react';
 import DragDropUpload from './components/DragDropUpload';
 import ProgressBar from './components/ProgressBar';
 import StoreCard from './components/StoreCard';
@@ -518,15 +518,15 @@ export default function StoreManagementApp() {
 
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out min-h-screen`}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><StoreIcon size={24} className="text-gray-800" /> Vitrin+</h1>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><Store size={24} className="text-gray-800" /> Vitrin+</h1>
           <p className="text-sm text-gray-600 mt-1">Mağaza Yönetim Sistemi</p>
         </div>
         <div className="p-4 border-b border-gray-200">
           <nav className="space-y-1">
             {[
-              { key: 'dashboard',  label: 'Dashboard',            Icon: DashboardIcon },
-              { key: 'management', label: 'Mağaza Bilgileri',     Icon: StoreIcon },
-              { key: 'brands',     label: 'Rakip İstatistikleri', Icon: BrandsIcon },
+              { key: 'dashboard',  label: 'Dashboard',            Icon: LayoutDashboard },
+              { key: 'management', label: 'Mağaza Bilgileri',     Icon: Store },
+              { key: 'brands',     label: 'Rakip İstatistikleri', Icon: LayoutPanelTop },
             ].map(({ key, label, Icon }) => (
               <button key={key} onClick={() => { setCurrentView(key); setSidebarOpen(false); }}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
@@ -541,7 +541,7 @@ export default function StoreManagementApp() {
                 onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
-                <RenovationIcon size={20} className="flex-shrink-0" />
+                <List size={20} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
               {currentView.startsWith('renovations') && (
@@ -550,14 +550,14 @@ export default function StoreManagementApp() {
                     onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-list' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
-                    <CheckIcon size={16} className="flex-shrink-0" />
+                    <List size={16} className="flex-shrink-0" />
                     Talepler
                   </button>
                   <button
                     onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${currentView === 'renovations-new' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
-                    <PlusIcon size={16} className="flex-shrink-0" />
+                    <ListPlus size={16} className="flex-shrink-0" />
                     Yeni Talep
                   </button>
                 </div>
@@ -566,13 +566,13 @@ export default function StoreManagementApp() {
 
             <button onClick={() => { setCurrentView('add-store'); setSidebarOpen(false); }}
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <PlusIcon size={20} className="flex-shrink-0" />
+              <MapPinPlus size={20} className="flex-shrink-0" />
               Yeni Mağaza Ekle
             </button>
 
             <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'store-edit' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <StoreIcon size={20} className="flex-shrink-0" />
+              <SquarePen size={20} className="flex-shrink-0" />
               Mağaza Düzenle
             </button>
           </nav>
@@ -588,7 +588,7 @@ export default function StoreManagementApp() {
               </svg>
             </button>
             <div className="flex-1 flex justify-center items-center gap-3">
-              <StoreIcon size={32} className="text-blue-600" />
+              <Store size={32} className="text-blue-600" />
             </div>
             <div className="lg:hidden w-10" />
           </div>
@@ -597,7 +597,7 @@ export default function StoreManagementApp() {
         <div className="p-6 max-w-6xl mx-auto pb-20">
           {currentView === 'dashboard' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><DashboardIcon size={24} className="text-gray-800" /> Dashboard</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><LayoutDashboard size={24} className="text-gray-800" /> Dashboard</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -621,7 +621,7 @@ export default function StoreManagementApp() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
                 {[
-                  { color: 'blue',   Icon: StoreIcon,     label: 'Toplam Mağaza',  value: stores.length },
+                  { color: 'blue',   Icon: Store,     label: 'Toplam Mağaza',  value: stores.length },
                   { color: 'green',  icon: '📝',          label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
                   { color: 'orange', icon: '🏙️',         label: 'Şehir Sayısı',   value: getUniqueLocations().length },
                   { color: 'purple', icon: '🎯',          label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
@@ -657,7 +657,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'brands' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><BrandsIcon size={24} className="text-gray-800" /> Rakip İstatistikleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><LayoutPanelTop size={24} className="text-gray-800" /> Rakip İstatistikleri</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
@@ -755,7 +755,7 @@ export default function StoreManagementApp() {
                 </div>
               ) : (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                  <div className="flex justify-center mb-4"><BrandsIcon size={48} className="text-gray-300" /></div>
+                  <div className="flex justify-center mb-4"><LayoutPanelTop size={48} className="text-gray-300" /></div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Henüz Rakip Marka Verisi Yok</h3>
                   <p className="text-gray-600 mb-4">Mağaza bilgileri bölümünden rakip marka ekleyerek bu raporu doldurun.</p>
                   <button onClick={() => setCurrentView('management')} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
@@ -768,7 +768,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-list' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><RenovationIcon size={24} className="text-gray-800" /> Tadilat Talepleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><List size={24} className="text-gray-800" /> Tadilat Talepleri</h2>
 
               {/* Arama ve filtre */}
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -805,7 +805,7 @@ export default function StoreManagementApp() {
               {/* Kart grid */}
               {renovations.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                  <div className="flex justify-center mb-4"><RenovationIcon size={48} className="text-gray-300" /></div>
+                  <div className="flex justify-center mb-4"><List size={48} className="text-gray-300" /></div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
@@ -832,7 +832,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-new' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><PlusIcon size={24} className="text-gray-800" /> Yeni Tadilat Talebi</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><ListPlus size={24} className="text-gray-800" /> Yeni Tadilat Talebi</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
@@ -890,7 +890,7 @@ export default function StoreManagementApp() {
                         onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
                         className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-dashed border-blue-300 w-full justify-center"
                       >
-                        <PlusIcon size={16} className="text-blue-600" /> Madde Ekle
+                        <Plus size={16} className="text-blue-600" /> Madde Ekle
                       </button>
                     </div>
                   </div>
@@ -958,7 +958,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'add-store' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><PlusIcon size={24} className="text-gray-800" /><StoreIcon size={24} className="text-gray-800" /> Yeni Mağaza Ekle</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPinPlus size={24} className="text-gray-800" /> Yeni Mağaza Ekle</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
                   <div>
@@ -1006,7 +1006,7 @@ export default function StoreManagementApp() {
           {currentView === 'store-edit' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <StoreIcon size={24} className="text-gray-800" /> Mağaza Düzenle
+                <SquarePen size={24} className="text-gray-800" /> Mağaza Düzenle
               </h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
@@ -1309,7 +1309,7 @@ export default function StoreManagementApp() {
                 ))}
                 <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
                   className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium border border-dashed border-blue-300 w-full justify-center transition-colors">
-                  <PlusIcon size={16} className="text-blue-600" /> Madde Ekle
+                  <Plus size={16} className="text-blue-600" /> Madde Ekle
                 </button>
               </div>
             </div>
