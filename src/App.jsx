@@ -5,6 +5,10 @@ import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
 import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller } from 'lucide-react';
+import kpiStore from './assets/kpi-store.svg';
+import kpiEdited from './assets/kpi-edited.svg';
+import kpiCity from './assets/kpi-city.svg';
+import kpiCompetitor from './assets/kpi-competitor.svg';
 import DragDropUpload from './components/DragDropUpload';
 import ProgressBar from './components/ProgressBar';
 import StoreCard from './components/StoreCard';
@@ -620,15 +624,15 @@ export default function StoreManagementApp() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
                 {[
-                  { color: 'blue',   Icon: Store,     label: 'Toplam Mağaza',  value: stores.length },
-                  { color: 'green',  icon: '📝',          label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
-                  { color: 'orange', icon: '🏙️',         label: 'Şehir Sayısı',   value: getUniqueLocations().length },
-                  { color: 'purple', icon: '🎯',          label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
-                ].map(({ color, Icon, icon, label, value }) => (
+                  { color: 'blue',   svg: kpiStore,      label: 'Toplam Mağaza',  value: stores.length },
+                  { color: 'green',  svg: kpiEdited,     label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
+                  { color: 'orange', svg: kpiCity,       label: 'Şehir Sayısı',   value: getUniqueLocations().length },
+                  { color: 'purple', svg: kpiCompetitor, label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
+                ].map(({ color, svg, label, value }) => (
                   <div key={label} className="bg-white rounded-xl shadow-sm p-6">
                     <div className="flex items-center">
                       <div className={`p-3 bg-${color}-100 rounded-lg`}>
-                        {Icon ? <Icon size={24} className={`text-${color}-600`} /> : <span className="text-2xl">{icon}</span>}
+                        <img src={svg} alt={label} className="w-6 h-6" />
                       </div>
                       <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
                     </div>
