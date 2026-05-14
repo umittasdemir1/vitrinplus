@@ -624,17 +624,15 @@ export default function StoreManagementApp() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
                 {[
-                  { color: 'blue',   svg: kpiStore,      label: 'Toplam Mağaza',  value: stores.length },
-                  { color: 'green',  svg: kpiEdited,     label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
-                  { color: 'orange', svg: kpiCity,       label: 'Şehir Sayısı',   value: getUniqueLocations().length },
-                  { color: 'purple', svg: kpiCompetitor, label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
-                ].map(({ color, svg, label, value }) => (
+                  { svg: kpiStore,      label: 'Toplam Mağaza',  value: stores.length },
+                  { svg: kpiEdited,     label: 'Düzenlenen',     value: stores.filter(s => s.images?.some(img => img?.trim())).length },
+                  { svg: kpiCity,       label: 'Şehir Sayısı',   value: getUniqueLocations().length },
+                  { svg: kpiCompetitor, label: 'Rakip Markalar', value: stores.reduce((t, s) => t + (s.competitorBrands?.filter(b => b.trim()).length || 0), 0) },
+                ].map(({ svg, label, value }) => (
                   <div key={label} className="bg-white rounded-xl shadow-sm p-6">
-                    <div className="flex items-center">
-                      <div className={`p-3 bg-${color}-100 rounded-lg`}>
-                        <img src={svg} alt={label} className="w-6 h-6" />
-                      </div>
-                      <div className="ml-4"><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
+                    <div className="flex items-center gap-4">
+                      <img src={svg} alt={label} className="w-12 h-12 flex-shrink-0" />
+                      <div><p className="text-sm text-gray-600">{label}</p><p className="text-2xl font-bold text-gray-800">{value}</p></div>
                     </div>
                   </div>
                 ))}
