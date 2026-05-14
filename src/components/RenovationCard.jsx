@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Trash } from './Icons';
 
-export default function RenovationCard({ renovation, onDelete }) {
+export default function RenovationCard({ renovation, onEdit, onDelete }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showDescModal, setShowDescModal] = useState(false);
@@ -24,10 +25,10 @@ export default function RenovationCard({ renovation, onDelete }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
-        {/* Fotoğraf alanı — sabit yükseklik */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md flex flex-col">
+        {/* Fotoğraf alanı — rounded-lg gives bottom corners, parent rounded-xl+overflow-hidden gives top corners */}
         <div
-          className="relative h-[260px] w-full bg-gray-200 overflow-hidden group cursor-pointer flex-shrink-0"
+          className="relative flex-shrink-0 h-[260px] w-full bg-gray-200 rounded-lg overflow-hidden group cursor-pointer"
           onClick={() => currentImage && setShowPhotoModal(true)}
         >
           {currentImage ? (
@@ -43,17 +44,17 @@ export default function RenovationCard({ renovation, onDelete }) {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i - 1 + images.length) % images.length); }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1 rounded-full shadow transition-all"
+                    className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-2 sm:p-1.5 rounded-full shadow-lg transition-all z-10"
                   >
                     <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" strokeWidth={2} /></svg>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i + 1) % images.length); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1 rounded-full shadow transition-all"
+                    className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 p-2 sm:p-1.5 rounded-full shadow-lg transition-all z-10"
                   >
                     <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6" strokeWidth={2} /></svg>
                   </button>
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                     {images.map((_, i) => (
                       <button key={i} onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
                         className={`w-2 h-2 rounded-full transition-all ${i === activeIndex ? 'bg-blue-500' : 'bg-white bg-opacity-70'}`} />
@@ -64,86 +65,91 @@ export default function RenovationCard({ renovation, onDelete }) {
                   </span>
                 </>
               )}
+
+              {/* Büyüt butonu (hover) */}
+              <button onClick={() => setShowPhotoModal(true)}
+                className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 p-1.5 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 z-10"
+                title="Fotoğrafı büyüt">
+                <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </button>
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <div className="text-center text-gray-400">
-                <svg className="w-12 h-12 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 12V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V12z" />
+              <div className="text-center text-gray-500">
+                <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21,15 16,10 5,21" />
                 </svg>
-                <span className="text-xs">Fotoğraf Yok</span>
+                <span className="text-sm">Henüz Fotoğraf Yüklenmedi</span>
               </div>
             </div>
           )}
         </div>
 
         {/* İçerik */}
-        <div className="p-4 flex flex-col flex-1">
-          {/* Başlık + konum */}
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold text-gray-800 text-base leading-tight">{renovation.storeName}</h3>
-            {renovation.location && (
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full flex-shrink-0 ml-2">
-                {renovation.location}
+        <div className="p-4 flex flex-col flex-1 justify-between">
+          <div>
+            {/* Başlık + konum */}
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-semibold text-gray-800 text-lg leading-tight">{renovation.storeName}</h3>
+              {renovation.location && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full flex-shrink-0 ml-2">
+                  {renovation.location}
+                </span>
+              )}
+            </div>
+
+            {/* Tarih */}
+            <div className="mb-3">
+              <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                📅 {new Date(renovation.talepTarihi).toLocaleDateString('tr-TR')}
               </span>
+            </div>
+
+            {/* Açıklama maddeleri */}
+            {items.length > 0 && (
+              <div className="mb-3">
+                <ul className="space-y-1">
+                  {items.slice(0, MAX_VISIBLE).map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {hasMore && (
+                  <button
+                    onClick={() => setShowDescModal(true)}
+                    className="mt-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    +{items.length - MAX_VISIBLE} madde daha göster
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
-          {/* Tarih */}
-          <div className="mb-3">
-            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
-              📅 {new Date(renovation.talepTarihi).toLocaleDateString('tr-TR')}
-            </span>
-          </div>
-
-          {/* Açıklama maddeleri */}
-          {items.length > 0 && (
-            <div className="flex-1 mb-3">
-              <ul className="space-y-1">
-                {items.slice(0, MAX_VISIBLE).map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              {hasMore && (
-                <button
-                  onClick={() => setShowDescModal(true)}
-                  className="mt-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  +{items.length - MAX_VISIBLE} madde daha göster
-                </button>
-              )}
+          {/* Alt kısım — StoreCard ile aynı yapı */}
+          <div className="mt-auto">
+            <div className="flex justify-between items-center text-xs text-gray-500 border-t pt-2 mb-2">
+              <span>Oluşturulma</span>
+              <span>{new Date(renovation.createdAt).toLocaleDateString('tr-TR')}</span>
             </div>
-          )}
-
-          {/* Alt kısım */}
-          <div className="flex items-center justify-between mt-auto pt-2 border-t">
-            <p className="text-xs text-gray-400">
-              {new Date(renovation.createdAt).toLocaleDateString('tr-TR')}
-            </p>
-            <div className="flex items-center gap-1">
-              {items.length > 0 && (
-                <button
-                  onClick={() => setShowDescModal(true)}
-                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="Açıklamayı Gör"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </button>
-              )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit?.()}
+                className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Düzenle
+              </button>
               {onDelete && (
                 <button
                   onClick={onDelete}
-                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors"
                   title="Talebi Sil"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Trash className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -154,36 +160,39 @@ export default function RenovationCard({ renovation, onDelete }) {
       {/* Fotoğraf modal */}
       {showPhotoModal && currentImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-2 sm:p-4"
           onClick={() => setShowPhotoModal(false)}
         >
-          <div className="relative max-w-4xl max-h-full w-full">
+          <div className="relative max-w-5xl max-h-full w-full">
             <img
               src={currentImage}
               alt={`${renovation.storeName} tadilat`}
-              className="w-auto max-h-[80vh] object-contain mx-auto rounded-lg"
+              className="w-auto h-[500px] object-contain mx-auto rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
             {images.length > 1 && (
               <>
                 <button onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i - 1 + images.length) % images.length); }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow-lg">
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-3 rounded-full shadow-lg">
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" strokeWidth={2} /></svg>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); setActiveIndex(i => (i + 1) % images.length); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-2 rounded-full shadow-lg">
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-3 rounded-full shadow-lg">
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6" strokeWidth={2} /></svg>
                 </button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-50 text-white text-sm px-4 py-1 rounded-full">
-                  {activeIndex + 1} / {images.length}
+                <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {images.map((_, i) => (
+                    <button key={i} onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
+                      className={`w-3 h-3 rounded-full transition-all ${i === activeIndex ? 'bg-blue-500 shadow-md' : 'bg-white bg-opacity-70'}`} />
+                  ))}
                 </div>
               </>
             )}
             <button
               onClick={() => setShowPhotoModal(false)}
-              className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg"
+              className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white bg-opacity-90 hover:bg-opacity-100 p-3 sm:p-2 rounded-full shadow-lg"
             >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -209,10 +218,8 @@ export default function RenovationCard({ renovation, onDelete }) {
                   {renovation.location && ` · ${renovation.location}`}
                 </span>
               </div>
-              <button
-                onClick={() => setShowDescModal(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
+              <button onClick={() => setShowDescModal(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

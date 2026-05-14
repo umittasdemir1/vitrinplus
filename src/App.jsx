@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
@@ -33,6 +33,7 @@ export default function StoreManagementApp() {
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
   const [renovationSearch, setRenovationSearch] = useState('');
   const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
+  const [editingRenovation, setEditingRenovation] = useState(null);
 
   useEffect(() => {
     let unsubStores, unsubRenovations;
@@ -340,6 +341,39 @@ export default function StoreManagementApp() {
     }
   };
 
+  const handleOpenEditRenovation = (renovation) => {
+    setEditingRenovation(renovation);
+    setRenovationForm({
+      storeId: renovation.storeId,
+      talepTarihi: renovation.talepTarihi,
+      aciklama: Array.isArray(renovation.aciklama) ? [...renovation.aciklama] : [renovation.aciklama || ''],
+      imageUrls: renovation.imageUrls || [],
+    });
+  };
+
+  const handleUpdateRenovation = async () => {
+    const validItems = renovationForm.aciklama.map(s => s.trim()).filter(Boolean);
+    if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
+    setRenovationSaving(true);
+    try {
+      const store = stores.find(s => s.id === renovationForm.storeId);
+      await updateDoc(doc(db, 'renovations', editingRenovation.id), {
+        storeId: renovationForm.storeId,
+        storeName: store?.name || renovationForm.storeId,
+        location: store?.location || '',
+        talepTarihi: renovationForm.talepTarihi,
+        aciklama: validItems,
+        imageUrls: renovationForm.imageUrls,
+      });
+      setEditingRenovation(null);
+      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
+    } catch (err) {
+      console.error('Tadilat güncelleme hatası:', err);
+    } finally {
+      setRenovationSaving(false);
+    }
+  };
+
   const handleDeleteRenovation = async (renovationId) => {
     if (!window.confirm('Bu tadilat talebini silmek istediğinizden emin misiniz?')) return;
     const renovation = renovations.find(r => r.id === renovationId);
@@ -443,6 +477,7 @@ export default function StoreManagementApp() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex">
       {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
@@ -758,7 +793,7 @@ export default function StoreManagementApp() {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {getFilteredRenovations().map((r) => (
-                      <RenovationCard key={r.id} renovation={r} onDelete={() => handleDeleteRenovation(r.id)} />
+                      <RenovationCard key={r.id} renovation={r} onEdit={() => handleOpenEditRenovation(r)} onDelete={() => handleDeleteRenovation(r.id)} />
                     ))}
                   </div>
                   {getFilteredRenovations().length === 0 && (
@@ -1139,5 +1174,87 @@ export default function StoreManagementApp() {
         </div>
       </div>
     </div>
+
+    {/* Tadilat düzenleme modal */}
+    {editingRenovation && (
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={() => setEditingRenovation(null)}>
+        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between p-6 border-b">
+            <h3 className="text-lg font-bold text-gray-800">Tadilat Talebini Düzenle</h3>
+            <button onClick={() => setEditingRenovation(null)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza *</label>
+                <select value={renovationForm.storeId} onChange={(e) => setRenovationForm(prev => ({ ...prev, storeId: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Mağaza seçiniz</option>
+                  {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
+                <input type="date" value={renovationForm.talepTarihi}
+                  onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Maddeleri *</label>
+              <div className="space-y-2">
+                {renovationForm.aciklama.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
+                    <input type="text" value={item}
+                      onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = e.target.value; return { ...prev, aciklama: u }; })}
+                      placeholder={`Madde ${i + 1}...`}
+                      className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    {renovationForm.aciklama.length > 1 && (
+                      <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
+                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
+                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium border border-dashed border-blue-300 w-full justify-center transition-colors">
+                  <PlusIcon size={16} className="text-blue-600" /> Madde Ekle
+                </button>
+              </div>
+            </div>
+            {renovationForm.imageUrls.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Fotoğraflar</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {renovationForm.imageUrls.map((url, i) => (
+                    <div key={i} className="relative group">
+                      <img src={url} className="w-full h-16 object-cover rounded-lg" alt={`Fotoğraf ${i + 1}`} />
+                      <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, imageUrls: prev.imageUrls.filter((_, idx) => idx !== i) }))}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-3 p-6 border-t">
+            <button onClick={() => setEditingRenovation(null)}
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+              İptal
+            </button>
+            <button onClick={handleUpdateRenovation}
+              disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.trim())}
+              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+              {renovationSaving ? 'Kaydediliyor...' : 'Kaydet'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
