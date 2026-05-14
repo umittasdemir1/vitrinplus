@@ -4,7 +4,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
-import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen } from 'lucide-react';
+import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller } from 'lucide-react';
 import DragDropUpload from './components/DragDropUpload';
 import ProgressBar from './components/ProgressBar';
 import StoreCard from './components/StoreCard';
@@ -518,7 +518,7 @@ export default function StoreManagementApp() {
 
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out min-h-screen`}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><Store size={24} className="text-gray-800" /> Vitrin+</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Vitrin+</h1>
           <p className="text-sm text-gray-600 mt-1">Mağaza Yönetim Sistemi</p>
         </div>
         <div className="p-4 border-b border-gray-200">
@@ -541,7 +541,7 @@ export default function StoreManagementApp() {
                 onClick={() => { setCurrentView('renovations-list'); setSidebarOpen(false); }}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView.startsWith('renovations') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
               >
-                <List size={20} className="flex-shrink-0" />
+                <PaintRoller size={20} className="flex-shrink-0" />
                 Mağaza Tadilatları
               </button>
               {currentView.startsWith('renovations') && (
@@ -587,9 +587,7 @@ export default function StoreManagementApp() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="flex-1 flex justify-center items-center gap-3">
-              <Store size={32} className="text-blue-600" />
-            </div>
+            <div className="flex-1" />
             <div className="lg:hidden w-10" />
           </div>
         </div>
@@ -597,7 +595,7 @@ export default function StoreManagementApp() {
         <div className="p-6 max-w-6xl mx-auto pb-20">
           {currentView === 'dashboard' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><LayoutDashboard size={24} className="text-gray-800" /> Dashboard</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -657,7 +655,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'brands' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><LayoutPanelTop size={24} className="text-gray-800" /> Rakip İstatistikleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Rakip İstatistikleri</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   {[
@@ -768,7 +766,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-list' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><List size={24} className="text-gray-800" /> Tadilat Talepleri</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Tadilat Talepleri</h2>
 
               {/* Arama ve filtre */}
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -832,7 +830,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'renovations-new' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><ListPlus size={24} className="text-gray-800" /> Yeni Tadilat Talebi</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Yeni Tadilat Talebi</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
@@ -958,7 +956,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'add-store' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPinPlus size={24} className="text-gray-800" /> Yeni Mağaza Ekle</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Yeni Mağaza Ekle</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
                   <div>
@@ -1005,9 +1003,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'store-edit' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <SquarePen size={24} className="text-gray-800" /> Mağaza Düzenle
-              </h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Mağaza Düzenle</h2>
               <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
                 <div className="space-y-4">
                   <div>
