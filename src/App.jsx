@@ -27,6 +27,8 @@ export default function StoreManagementApp() {
   const [showModal, setShowModal] = useState(false);
   const [newStore, setNewStore] = useState({ name: '', address: '', location: '' });
   const [addingSaving, setAddingSaving] = useState(false);
+  const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '' });
+  const [storeEditSaving, setStoreEditSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
   const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
   const [renovationSaving, setRenovationSaving] = useState(false);
@@ -448,6 +450,22 @@ export default function StoreManagementApp() {
     }
   };
 
+  const handleUpdateStoreInfo = async () => {
+    if (!storeEditForm.id || !storeEditForm.name.trim()) return;
+    setStoreEditSaving(true);
+    try {
+      await updateDoc(doc(db, 'stores', storeEditForm.id), {
+        name: storeEditForm.name.trim(),
+        location: storeEditForm.location.trim(),
+        address: storeEditForm.address.trim(),
+      });
+    } catch (e) {
+      console.error('Mağaza güncellenemedi:', e);
+    } finally {
+      setStoreEditSaving(false);
+    }
+  };
+
   const getAllCompetitors = () => {
     const map = {};
     stores.forEach(store => {
@@ -533,6 +551,12 @@ export default function StoreManagementApp() {
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'add-store' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
               <PlusIcon size={20} className="flex-shrink-0" />
               Yeni Mağaza Ekle
+            </button>
+
+            <button onClick={() => { setCurrentView('store-edit'); setSidebarOpen(false); }}
+              className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${currentView === 'store-edit' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}>
+              <StoreIcon size={20} className="flex-shrink-0" />
+              Mağaza Düzenle
             </button>
           </nav>
         </div>
@@ -956,6 +980,71 @@ export default function StoreManagementApp() {
                     className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingSaving ? 'Kaydediliyor...' : 'Mağaza Ekle'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'store-edit' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <StoreIcon size={24} className="text-gray-800" /> Mağaza Düzenle
+              </h2>
+              <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç *</label>
+                    <select
+                      value={storeEditForm.id}
+                      onChange={(e) => {
+                        const store = stores.find(s => s.id === e.target.value);
+                        setStoreEditForm(store
+                          ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '' }
+                          : { id: '', name: '', location: '', address: '' });
+                      }}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Düzenlenecek mağazayı seçin</option>
+                      {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Adı *</label>
+                    <input
+                      type="text"
+                      value={storeEditForm.name}
+                      onChange={(e) => setStoreEditForm(prev => ({ ...prev, name: e.target.value }))}
+                      disabled={!storeEditForm.id}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Şehir</label>
+                    <input
+                      type="text"
+                      value={storeEditForm.location}
+                      onChange={(e) => setStoreEditForm(prev => ({ ...prev, location: e.target.value }))}
+                      disabled={!storeEditForm.id}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Adres</label>
+                    <textarea
+                      value={storeEditForm.address}
+                      onChange={(e) => setStoreEditForm(prev => ({ ...prev, address: e.target.value }))}
+                      disabled={!storeEditForm.id}
+                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:text-gray-400"
+                    />
+                  </div>
+                  <button
+                    onClick={handleUpdateStoreInfo}
+                    disabled={storeEditSaving || !storeEditForm.id || !storeEditForm.name.trim()}
+                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {storeEditSaving ? 'Kaydediliyor...' : 'Kaydet'}
                   </button>
                 </div>
               </div>
