@@ -1360,14 +1360,14 @@ export default function StoreManagementApp() {
     {/* Tadilat düzenleme modal */}
     {editingRenovation && (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={() => setEditingRenovation(null)}>
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between p-6 border-b">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
             <h3 className="text-lg font-bold text-gray-800">Tadilat Talebini Düzenle</h3>
             <button onClick={() => setEditingRenovation(null)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1 modal-scroll">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza *</label>
@@ -1433,22 +1433,34 @@ export default function StoreManagementApp() {
                 </button>
               </div>
             </div>
-            {renovationForm.imageUrls.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fotoğraflar</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {renovationForm.imageUrls.map((url, i) => (
-                    <div key={i} className="relative group aspect-square">
-                      <img src={url} className="w-full h-full object-cover rounded-xl" alt={`Fotoğraf ${i + 1}`} />
-                      <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, imageUrls: prev.imageUrls.filter((_, idx) => idx !== i) }))}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow">×</button>
-                    </div>
-                  ))}
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Fotoğraflar</label>
+              <div className="grid grid-cols-4 gap-2">
+                <label className={`aspect-square flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors ${uploadingRenovationImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <input type="file" accept="image/*" multiple className="hidden" disabled={uploadingRenovationImage}
+                    onChange={(e) => { if (e.target.files?.length) handleRenovationImageSelect(Array.from(e.target.files)); e.target.value = ''; }} />
+                  {uploadingRenovationImage ? (
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <svg className="w-7 h-7 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="text-xs text-gray-400 text-center leading-tight px-1">Fotoğraf ekle</span>
+                    </>
+                  )}
+                </label>
+                {renovationForm.imageUrls.map((url, i) => (
+                  <div key={i} className="relative group aspect-square">
+                    <img src={url} className="w-full h-full object-cover rounded-xl" alt={`Fotoğraf ${i + 1}`} />
+                    <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, imageUrls: prev.imageUrls.filter((_, idx) => idx !== i) }))}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow">×</button>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
-          <div className="flex gap-3 p-6 border-t">
+          <div className="flex gap-3 p-6 border-t flex-shrink-0">
             <button onClick={() => setEditingRenovation(null)}
               className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
               İptal
