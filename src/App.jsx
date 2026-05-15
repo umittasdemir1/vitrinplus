@@ -547,7 +547,7 @@ export default function StoreManagementApp() {
     <div className="min-h-screen bg-gray-50 flex">
       {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white border-r border-gray-100 shadow-sm transform transition-transform duration-300 ease-in-out min-h-screen`}>
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:sticky lg:top-0 lg:h-screen inset-y-0 left-0 z-30 w-72 bg-white border-r border-gray-100 shadow-sm transform transition-transform duration-300 ease-in-out min-h-screen overflow-y-auto`}>
         <div className="px-6 py-5 border-b border-gray-100">
           <h1 className="text-xl font-bold tracking-tight text-gray-900">Vitrin+</h1>
           <p className="text-xs text-gray-400 mt-0.5 tracking-wide uppercase">Mağaza Yönetim Sistemi</p>
@@ -1114,6 +1114,7 @@ export default function StoreManagementApp() {
 
           {currentView === 'management' && (
             <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Mağaza Bilgileri</h2>
               <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <div>
