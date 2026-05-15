@@ -901,17 +901,17 @@ export default function StoreManagementApp() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
-                    <div className="relative">
+                    <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
                       <input
                         id="new-talepTarihi"
                         type="date"
                         value={renovationForm.talepTarihi}
                         onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                        className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker text-gray-800"
+                        className="flex-1 p-3 rounded-lg date-picker text-gray-900"
                       />
-                      <label htmlFor="new-talepTarihi" className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">
-                        <Calendar size={22} className="text-gray-700" />
-                      </label>
+                      <div className="pr-3 cursor-pointer flex-shrink-0" onClick={() => document.getElementById('new-talepTarihi')?.showPicker?.()}>
+                        <Calendar size={22} strokeWidth={1.5} className="text-gray-900" />
+                      </div>
                     </div>
                   </div>
                   <div className="lg:col-span-2">
@@ -944,7 +944,7 @@ export default function StoreManagementApp() {
                             )}
                           </div>
                           <div className="flex items-center gap-2 pl-8 flex-wrap">
-                            <div className="relative">
+                            <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
                               <input
                                 id={`new-item-date-${i}`}
                                 type="date"
@@ -954,11 +954,11 @@ export default function StoreManagementApp() {
                                   updated[i] = { ...updated[i], date: e.target.value };
                                   return { ...prev, aciklama: updated };
                                 })}
-                                className="p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800"
+                                className="flex-1 p-2 rounded-lg text-sm date-picker text-gray-900"
                               />
-                              <label htmlFor={`new-item-date-${i}`} className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer">
-                                <Calendar size={20} className="text-gray-700" />
-                              </label>
+                              <div className="pr-2 cursor-pointer flex-shrink-0" onClick={() => document.getElementById(`new-item-date-${i}`)?.showPicker?.()}>
+                                <Calendar size={20} strokeWidth={1.5} className="text-gray-900" />
+                              </div>
                             </div>
                             <button
                               type="button"
@@ -1397,13 +1397,13 @@ export default function StoreManagementApp() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
-                <div className="relative">
+                <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
                   <input id="edit-talepTarihi" type="date" value={renovationForm.talepTarihi}
                     onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker text-gray-800" />
-                  <label htmlFor="edit-talepTarihi" className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">
-                    <Calendar size={22} className="text-gray-700" />
-                  </label>
+                    className="flex-1 p-3 rounded-lg date-picker text-gray-900" />
+                  <div className="pr-3 cursor-pointer flex-shrink-0" onClick={() => document.getElementById('edit-talepTarihi')?.showPicker?.()}>
+                    <Calendar size={22} strokeWidth={1.5} className="text-gray-900" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1425,17 +1425,17 @@ export default function StoreManagementApp() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 pl-8 flex-wrap">
-                      <div className="relative">
+                      <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
                         <input
                           id={`edit-item-date-${i}`}
                           type="date"
                           value={item.date}
                           onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
-                          className="p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800"
+                          className="flex-1 p-2 rounded-lg text-sm date-picker text-gray-900"
                         />
-                        <label htmlFor={`edit-item-date-${i}`} className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer">
-                          <Calendar size={20} className="text-gray-700" />
-                        </label>
+                        <div className="pr-2 cursor-pointer flex-shrink-0" onClick={() => document.getElementById(`edit-item-date-${i}`)?.showPicker?.()}>
+                          <Calendar size={20} strokeWidth={1.5} className="text-gray-900" />
+                        </div>
                       </div>
                       <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
