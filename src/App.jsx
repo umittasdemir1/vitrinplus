@@ -905,7 +905,7 @@ export default function StoreManagementApp() {
                       type="date"
                       value={renovationForm.talepTarihi}
                       onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-700' : 'text-gray-400'}`}
                     />
                   </div>
                   <div className="lg:col-span-2">
@@ -946,7 +946,7 @@ export default function StoreManagementApp() {
                                 updated[i] = { ...updated[i], date: e.target.value };
                                 return { ...prev, aciklama: updated };
                               })}
-                              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              className={`p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker ${item.date ? 'text-gray-700' : 'text-gray-400'}`}
                             />
                             <button
                               type="button"
@@ -1387,7 +1387,7 @@ export default function StoreManagementApp() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
                 <input type="date" value={renovationForm.talepTarihi}
                   onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-700' : 'text-gray-400'}`} />
               </div>
             </div>
             <div>
@@ -1412,7 +1412,7 @@ export default function StoreManagementApp() {
                         type="date"
                         value={item.date}
                         onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
-                        className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className={`p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker ${item.date ? 'text-gray-700' : 'text-gray-400'}`}
                       />
                       <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
