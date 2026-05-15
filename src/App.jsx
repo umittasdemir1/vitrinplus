@@ -1416,12 +1416,12 @@ export default function StoreManagementApp() {
                       />
                       <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'completed' ? 'bg-green-500 text-white' : 'border-2 border-gray-300 text-gray-400 hover:border-green-400 hover:text-green-500'}`}>
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'completed' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-500 hover:bg-green-200'}`}>
                         <Check size={14} strokeWidth={2.5} />
                       </button>
                       <button type="button" title="İptal Edildi"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'cancelled' ? 'active' : 'cancelled' }; return { ...prev, aciklama: u }; })}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'border-2 border-gray-300 text-gray-400 hover:border-red-400 hover:text-red-500'}`}>
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'bg-red-100 text-red-500 hover:bg-red-200'}`}>
                         <X size={14} strokeWidth={2.5} />
                       </button>
                     </div>
