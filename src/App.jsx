@@ -4,7 +4,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
-import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp } from 'lucide-react';
+import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
 import kpiEdited from './assets/kpi-edited.svg';
 import kpiCity from './assets/kpi-city.svg';
@@ -1414,15 +1414,15 @@ export default function StoreManagementApp() {
                         onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
                         className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       />
-                      <button type="button"
+                      <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
-                        className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'completed' ? 'bg-green-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-green-400 hover:text-green-600'}`}>
-                        Tamamlandı
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'completed' ? 'bg-green-500 text-white' : 'border-2 border-gray-300 text-gray-400 hover:border-green-400 hover:text-green-500'}`}>
+                        <Check size={14} strokeWidth={2.5} />
                       </button>
-                      <button type="button"
+                      <button type="button" title="İptal Edildi"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'cancelled' ? 'active' : 'cancelled' }; return { ...prev, aciklama: u }; })}
-                        className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-red-400 hover:text-red-600'}`}>
-                        İptal Edildi
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'border-2 border-gray-300 text-gray-400 hover:border-red-400 hover:text-red-500'}`}>
+                        <X size={14} strokeWidth={2.5} />
                       </button>
                     </div>
                   </div>
