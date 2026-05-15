@@ -903,14 +903,15 @@ export default function StoreManagementApp() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
                     <div className="relative">
                       <input
+                        id="new-talepTarihi"
                         type="date"
                         value={renovationForm.talepTarihi}
                         onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                        className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-800' : 'text-gray-800'}`}
+                        className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker text-gray-800"
                       />
-                      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 ">
-                        <Calendar size={18} className="text-gray-800" />
-                      </div>
+                      <label htmlFor="new-talepTarihi" className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">
+                        <Calendar size={22} className="text-gray-700" />
+                      </label>
                     </div>
                   </div>
                   <div className="lg:col-span-2">
@@ -945,6 +946,7 @@ export default function StoreManagementApp() {
                           <div className="flex items-center gap-2 pl-8 flex-wrap">
                             <div className="relative">
                               <input
+                                id={`new-item-date-${i}`}
                                 type="date"
                                 value={item.date}
                                 onChange={(e) => setRenovationForm(prev => {
@@ -952,11 +954,11 @@ export default function StoreManagementApp() {
                                   updated[i] = { ...updated[i], date: e.target.value };
                                   return { ...prev, aciklama: updated };
                                 })}
-                                className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800`}
+                                className="p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800"
                               />
-                              <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1">
-                                <Calendar size={16} className="text-white" />
-                              </div>
+                              <label htmlFor={`new-item-date-${i}`} className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer">
+                                <Calendar size={20} className="text-gray-700" />
+                              </label>
                             </div>
                             <button
                               type="button"
@@ -1396,12 +1398,12 @@ export default function StoreManagementApp() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
                 <div className="relative">
-                  <input type="date" value={renovationForm.talepTarihi}
+                  <input id="edit-talepTarihi" type="date" value={renovationForm.talepTarihi}
                     onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                    className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-800' : 'text-gray-800'}`} />
-                  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1.5">
-                    <Calendar size={18} className="text-white" />
-                  </div>
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker text-gray-800" />
+                  <label htmlFor="edit-talepTarihi" className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer">
+                    <Calendar size={22} className="text-gray-700" />
+                  </label>
                 </div>
               </div>
             </div>
@@ -1425,14 +1427,15 @@ export default function StoreManagementApp() {
                     <div className="flex items-center gap-2 pl-8 flex-wrap">
                       <div className="relative">
                         <input
+                          id={`edit-item-date-${i}`}
                           type="date"
                           value={item.date}
                           onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
-                          className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800`}
+                          className="p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800"
                         />
-                        <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 ">
-                          <Calendar size={16} className="text-gray-800" />
-                        </div>
+                        <label htmlFor={`edit-item-date-${i}`} className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer">
+                          <Calendar size={20} className="text-gray-700" />
+                        </label>
                       </div>
                       <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
