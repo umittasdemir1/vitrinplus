@@ -906,10 +906,10 @@ export default function StoreManagementApp() {
                         type="date"
                         value={renovationForm.talepTarihi}
                         onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                        className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker bg-gray-50 ${renovationForm.talepTarihi ? 'text-gray-700' : 'text-gray-400'}`}
+                        className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-800' : 'text-gray-800'}`}
                       />
-                      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1.5">
-                        <Calendar size={18} className="text-white" />
+                      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 ">
+                        <Calendar size={18} className="text-gray-800" />
                       </div>
                     </div>
                   </div>
@@ -952,7 +952,7 @@ export default function StoreManagementApp() {
                                   updated[i] = { ...updated[i], date: e.target.value };
                                   return { ...prev, aciklama: updated };
                                 })}
-                                className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker bg-gray-50 ${item.date ? 'text-gray-700' : 'text-gray-400'}`}
+                                className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800`}
                               />
                               <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1">
                                 <Calendar size={16} className="text-white" />
@@ -1398,7 +1398,7 @@ export default function StoreManagementApp() {
                 <div className="relative">
                   <input type="date" value={renovationForm.talepTarihi}
                     onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                    className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker bg-gray-50 ${renovationForm.talepTarihi ? 'text-gray-700' : 'text-gray-400'}`} />
+                    className={`w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent date-picker ${renovationForm.talepTarihi ? 'text-gray-800' : 'text-gray-800'}`} />
                   <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1.5">
                     <Calendar size={18} className="text-white" />
                   </div>
@@ -1428,10 +1428,10 @@ export default function StoreManagementApp() {
                           type="date"
                           value={item.date}
                           onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
-                          className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker bg-gray-50 ${item.date ? 'text-gray-700' : 'text-gray-400'}`}
+                          className={`p-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm date-picker text-gray-800`}
                         />
-                        <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 bg-gray-500 rounded p-1">
-                          <Calendar size={16} className="text-white" />
+                        <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 ">
+                          <Calendar size={16} className="text-gray-800" />
                         </div>
                       </div>
                       <button type="button" title="Tamamlandı"
