@@ -63,7 +63,7 @@ body {
         input[type="date"].date-picker::-webkit-datetime-edit-day-field,
         input[type="date"].date-picker::-webkit-datetime-edit-year-field { color: inherit; }
         input[type="date"].date-picker::-webkit-datetime-edit { background: inherit; }
-        input[type="date"].date-picker::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; }
+        input[type="date"].date-picker::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; width: 2.5rem; position: absolute; right: 0; top: 0; bottom: 0; }
 
         .modal-scroll::-webkit-scrollbar { width: 4px; }
         .modal-scroll::-webkit-scrollbar-track { background: transparent; }
