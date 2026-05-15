@@ -35,7 +35,7 @@ export default function StoreManagementApp() {
   const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '' });
   const [storeEditSaving, setStoreEditSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
-  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
+  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
   const [renovationSaving, setRenovationSaving] = useState(false);
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
   const [renovationSearch, setRenovationSearch] = useState('');
@@ -112,7 +112,7 @@ export default function StoreManagementApp() {
   };
 
   const handleSaveRenovation = async () => {
-    const validItems = renovationForm.aciklama.map(s => s.trim()).filter(Boolean);
+    const validItems = renovationForm.aciklama.map(item => ({ ...item, text: item.text.trim() })).filter(item => item.text);
     if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
     setRenovationSaving(true);
     try {
@@ -127,7 +127,7 @@ export default function StoreManagementApp() {
         createdAt: new Date().toISOString(),
       };
       await addDoc(collection(db, 'renovations'), data);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
+      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
       setCurrentView('renovations-list');
     } catch (err) {
       console.error('Tadilat kaydetme hatası:', err);
@@ -373,13 +373,13 @@ export default function StoreManagementApp() {
     setRenovationForm({
       storeId: renovation.storeId,
       talepTarihi: renovation.talepTarihi,
-      aciklama: Array.isArray(renovation.aciklama) ? [...renovation.aciklama] : [renovation.aciklama || ''],
+      aciklama: normalizeAciklama(renovation.aciklama),
       imageUrls: renovation.imageUrls || [],
     });
   };
 
   const handleUpdateRenovation = async () => {
-    const validItems = renovationForm.aciklama.map(s => s.trim()).filter(Boolean);
+    const validItems = renovationForm.aciklama.map(item => ({ ...item, text: item.text.trim() })).filter(item => item.text);
     if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
     setRenovationSaving(true);
     try {
@@ -393,7 +393,7 @@ export default function StoreManagementApp() {
         imageUrls: renovationForm.imageUrls,
       });
       setEditingRenovation(null);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] });
+      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
     } catch (err) {
       console.error('Tadilat güncelleme hatası:', err);
     } finally {
@@ -437,6 +437,15 @@ export default function StoreManagementApp() {
     space + first.toLocaleUpperCase('tr-TR') + rest.toLocaleLowerCase('tr-TR')
   );
 
+  const normalizeAciklama = (aciklama) => {
+    if (!Array.isArray(aciklama)) return [{ text: aciklama || '', status: 'active', date: '' }];
+    return aciklama.map(item =>
+      typeof item === 'string'
+        ? { text: item, status: 'active', date: '' }
+        : { text: item.text || '', status: item.status || 'active', date: item.date || '' }
+    );
+  };
+
   const normTR = (str) => (str || '')
     .replace(/İ/g, 'i').replace(/Ğ/g, 'g').replace(/Ü/g, 'u')
     .replace(/Ş/g, 's').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
@@ -450,7 +459,7 @@ export default function StoreManagementApp() {
     return renovations.filter(r => {
       const store = storeById[r.storeId];
       const aciklamaText = Array.isArray(r.aciklama)
-        ? r.aciklama.join(' ')
+        ? r.aciklama.map(item => typeof item === 'string' ? item : item.text).join(' ')
         : (r.aciklama || '');
       const matchSearch = !q ||
         normTR(r.storeName).includes(q) ||
@@ -585,7 +594,7 @@ export default function StoreManagementApp() {
                     Talepler
                   </button>
                   <button
-                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); setSidebarOpen(false); }}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] }); setSidebarOpen(false); }}
                     className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
                     <ListPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
@@ -847,7 +856,7 @@ export default function StoreManagementApp() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
-                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [''], imageUrls: [] }); }}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] }); }}
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Yeni Talep Oluştur
@@ -903,34 +912,70 @@ export default function StoreManagementApp() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Talep Maddeleri *</label>
                     <div className="space-y-2">
                       {renovationForm.aciklama.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
-                          <input
-                            type="text"
-                            value={item}
-                            onChange={(e) => setRenovationForm(prev => {
-                              const updated = [...prev.aciklama];
-                              updated[i] = titleCaseTR(e.target.value);
-                              return { ...prev, aciklama: updated };
-                            })}
-                            className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          {renovationForm.aciklama.length > 1 && (
+                        <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
+                            <input
+                              type="text"
+                              value={item.text}
+                              onChange={(e) => setRenovationForm(prev => {
+                                const updated = [...prev.aciklama];
+                                updated[i] = { ...updated[i], text: titleCaseTR(e.target.value) };
+                                return { ...prev, aciklama: updated };
+                              })}
+                              className="flex-1 p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            />
+                            {renovationForm.aciklama.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
+                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 pl-8 flex-wrap">
+                            <input
+                              type="date"
+                              value={item.date}
+                              onChange={(e) => setRenovationForm(prev => {
+                                const updated = [...prev.aciklama];
+                                updated[i] = { ...updated[i], date: e.target.value };
+                                return { ...prev, aciklama: updated };
+                              })}
+                              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            />
                             <button
                               type="button"
-                              onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
-                              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                              onClick={() => setRenovationForm(prev => {
+                                const updated = [...prev.aciklama];
+                                updated[i] = { ...updated[i], status: updated[i].status === 'completed' ? 'active' : 'completed' };
+                                return { ...prev, aciklama: updated };
+                              })}
+                              className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'completed' ? 'bg-green-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-green-400 hover:text-green-600'}`}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                              Tamamlandı
                             </button>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => setRenovationForm(prev => {
+                                const updated = [...prev.aciklama];
+                                updated[i] = { ...updated[i], status: updated[i].status === 'cancelled' ? 'active' : 'cancelled' };
+                                return { ...prev, aciklama: updated };
+                              })}
+                              className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-red-400 hover:text-red-600'}`}
+                            >
+                              İptal Edildi
+                            </button>
+                          </div>
                         </div>
                       ))}
                       <button
                         type="button"
-                        onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
+                        onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '' }] }))}
                         className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-dashed border-blue-300 w-full justify-center"
                       >
                         <Plus size={16} className="text-blue-600" /> Madde Ekle
@@ -981,7 +1026,7 @@ export default function StoreManagementApp() {
                 <div className="mt-6">
                   <button
                     onClick={handleSaveRenovation}
-                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.trim())}
+                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.text?.trim())}
                     className="w-full h-[60px] flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed rounded-lg overflow-hidden"
                   >
                     <div className={`w-[60px] h-full flex items-center justify-center ${renovationSaving ? 'bg-gray-600' : 'bg-gray-800'}`}>
@@ -1349,21 +1394,40 @@ export default function StoreManagementApp() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Maddeleri *</label>
               <div className="space-y-2">
                 {renovationForm.aciklama.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
-                    <input type="text" value={item}
-                      onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = titleCaseTR(e.target.value); return { ...prev, aciklama: u }; })}
-                      placeholder=""
-                      className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                    {renovationForm.aciklama.length > 1 && (
-                      <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
-                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex-shrink-0 w-6 text-center text-gray-400 text-sm font-medium">{i + 1}.</span>
+                      <input type="text" value={item.text}
+                        onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], text: titleCaseTR(e.target.value) }; return { ...prev, aciklama: u }; })}
+                        className="flex-1 p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
+                      {renovationForm.aciklama.length > 1 && (
+                        <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: prev.aciklama.filter((_, idx) => idx !== i) }))}
+                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 pl-8 flex-wrap">
+                      <input
+                        type="date"
+                        value={item.date}
+                        onChange={(e) => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], date: e.target.value }; return { ...prev, aciklama: u }; })}
+                        className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <button type="button"
+                        onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
+                        className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'completed' ? 'bg-green-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-green-400 hover:text-green-600'}`}>
+                        Tamamlandı
                       </button>
-                    )}
+                      <button type="button"
+                        onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'cancelled' ? 'active' : 'cancelled' }; return { ...prev, aciklama: u }; })}
+                        className={`px-3 py-2 text-xs rounded-lg font-medium transition-colors ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'border border-gray-300 text-gray-500 hover:border-red-400 hover:text-red-600'}`}>
+                        İptal Edildi
+                      </button>
+                    </div>
                   </div>
                 ))}
-                <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, ''] }))}
+                <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '' }] }))}
                   className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium border border-dashed border-blue-300 w-full justify-center transition-colors">
                   <Plus size={16} className="text-blue-600" /> Madde Ekle
                 </button>
@@ -1390,7 +1454,7 @@ export default function StoreManagementApp() {
               İptal
             </button>
             <button onClick={handleUpdateRenovation}
-              disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.trim())}
+              disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.text?.trim())}
               className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
               {renovationSaving ? 'Kaydediliyor...' : 'Kaydet'}
             </button>

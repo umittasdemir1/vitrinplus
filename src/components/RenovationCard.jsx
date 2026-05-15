@@ -15,10 +15,18 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
   const currentImage = images[activeIndex];
 
   const items = Array.isArray(renovation.aciklama)
-    ? renovation.aciklama.filter(Boolean)
+    ? renovation.aciklama
+        .map(item => typeof item === 'string' ? { text: item, status: 'active', date: '' } : item)
+        .filter(item => item.text)
     : renovation.aciklama
-      ? [renovation.aciklama]
+      ? [{ text: renovation.aciklama, status: 'active', date: '' }]
       : [];
+
+  const statusBadge = (status) => {
+    if (status === 'completed') return <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium flex-shrink-0">Tamamlandı</span>;
+    if (status === 'cancelled') return <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded font-medium flex-shrink-0">İptal</span>;
+    return null;
+  };
 
   const MAX_VISIBLE = 2;
   const hasMore = items.length > MAX_VISIBLE;
@@ -113,8 +121,10 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
                 <ul className="space-y-1">
                   {items.slice(0, MAX_VISIBLE).map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5" />
-                      <span>{item}</span>
+                      <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 ${item.status === 'completed' ? 'bg-green-400' : item.status === 'cancelled' ? 'bg-red-400' : 'bg-blue-400'}`} />
+                      <span className={item.status === 'cancelled' ? 'line-through text-gray-400' : ''}>{item.text}</span>
+                      {statusBadge(item.status)}
+                      {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{new Date(item.date).toLocaleDateString('tr-TR')}</span>}
                     </li>
                   ))}
                 </ul>
@@ -228,10 +238,16 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
             <ul className="space-y-2">
               {items.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center mt-0.5">
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center mt-0.5 ${item.status === 'completed' ? 'bg-green-100 text-green-600' : item.status === 'cancelled' ? 'bg-red-100 text-red-500' : 'bg-blue-100 text-blue-600'}`}>
                     {i + 1}
                   </span>
-                  <span className="text-gray-700 text-sm leading-relaxed">{item}</span>
+                  <div className="flex-1">
+                    <span className={`text-sm leading-relaxed ${item.status === 'cancelled' ? 'line-through text-gray-400' : 'text-gray-700'}`}>{item.text}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {statusBadge(item.status)}
+                      {item.date && <span className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString('tr-TR')}</span>}
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
