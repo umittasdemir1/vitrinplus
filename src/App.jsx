@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
-import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller } from 'lucide-react';
+import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
 import kpiEdited from './assets/kpi-edited.svg';
 import kpiCity from './assets/kpi-city.svg';
@@ -42,6 +42,9 @@ export default function StoreManagementApp() {
   const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
   const [editingRenovation, setEditingRenovation] = useState(null);
   const [renovationMenuOpen, setRenovationMenuOpen] = useState(false);
+  const [openSelect, setOpenSelect] = useState(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     let unsubStores, unsubRenovations;
@@ -66,6 +69,22 @@ export default function StoreManagementApp() {
 
     init();
     return () => { unsubStores?.(); unsubRenovations?.(); };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY < 10) {
+        setHeaderVisible(true);
+      } else if (currentY > lastScrollY.current) {
+        setHeaderVisible(false);
+      } else {
+        setHeaderVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleRenovationImageSelect = async (files) => {
@@ -401,11 +420,16 @@ export default function StoreManagementApp() {
     }
   };
 
-  const getFilteredStores = () =>
-    stores.filter(s => {
-      const matchSearch = s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || s.address?.toLowerCase().includes(searchTerm.toLowerCase());
+  const getFilteredStores = () => {
+    const q = normTR(searchTerm);
+    return stores.filter(s => {
+      const matchSearch = !q ||
+        normTR(s.name).includes(q) ||
+        normTR(s.address).includes(q) ||
+        normTR(s.location).includes(q);
       return matchSearch && (filterLocation === 'all' || s.location === filterLocation);
     });
+  };
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
 
@@ -430,7 +454,8 @@ export default function StoreManagementApp() {
         : (r.aciklama || '');
       const matchSearch = !q ||
         normTR(r.storeName).includes(q) ||
-        normTR(aciklamaText).includes(q);
+        normTR(aciklamaText).includes(q) ||
+        normTR(store?.location).includes(q);
       const matchLocation = renovationFilterLocation === 'all' || store?.location === renovationFilterLocation;
       return matchSearch && matchLocation;
     });
@@ -586,7 +611,7 @@ export default function StoreManagementApp() {
       </div>
 
       <div className="flex-1 lg:ml-0">
-        <div className="bg-white border-b border-gray-200">
+        <div className={`bg-white border-b border-gray-200 sticky top-0 z-10 transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           <div className="flex items-center justify-between px-6 py-4">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -608,17 +633,23 @@ export default function StoreManagementApp() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Ara</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                      <input type="text" placeholder="Mağaza adı veya adres ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                      <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Şehir Filtresi</label>
-                    <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="all">Tüm Şehirler</option>
-                      {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}
+                        onFocus={() => setOpenSelect('filterLocation')} onBlur={() => setOpenSelect(null)}
+                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
+                        <option value="all">Tüm Şehirler</option>
+                        {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        {openSelect === 'filterLocation' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -781,7 +812,6 @@ export default function StoreManagementApp() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                       <input
                         type="text"
-                        placeholder="Mağaza adı veya açıklama ara..."
                         value={renovationSearch}
                         onChange={(e) => setRenovationSearch(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -790,14 +820,20 @@ export default function StoreManagementApp() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Şehir Filtresi</label>
-                    <select
-                      value={renovationFilterLocation}
-                      onChange={(e) => setRenovationFilterLocation(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="all">Tüm Şehirler</option>
-                      {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={renovationFilterLocation}
+                        onChange={(e) => setRenovationFilterLocation(e.target.value)}
+                        onFocus={() => setOpenSelect('renovationFilterLocation')} onBlur={() => setOpenSelect(null)}
+                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                      >
+                        <option value="all">Tüm Şehirler</option>
+                        {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        {openSelect === 'renovationFilterLocation' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -839,14 +875,20 @@ export default function StoreManagementApp() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç *</label>
-                    <select
-                      value={renovationForm.storeId}
-                      onChange={(e) => setRenovationForm(prev => ({ ...prev, storeId: e.target.value }))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Mağaza seçiniz</option>
-                      {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={renovationForm.storeId}
+                        onChange={(e) => setRenovationForm(prev => ({ ...prev, storeId: e.target.value }))}
+                        onFocus={() => setOpenSelect('renovationStoreId')} onBlur={() => setOpenSelect(null)}
+                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                      >
+                        <option value="">Mağaza seçiniz</option>
+                        {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        {openSelect === 'renovationStoreId' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
@@ -871,7 +913,6 @@ export default function StoreManagementApp() {
                               updated[i] = titleCaseTR(e.target.value);
                               return { ...prev, aciklama: updated };
                             })}
-                            placeholder=""
                             className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           {renovationForm.aciklama.length > 1 && (
@@ -969,7 +1010,6 @@ export default function StoreManagementApp() {
                       type="text"
                       value={newStore.name}
                       onChange={(e) => setNewStore(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="örn. Nişantaşı"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -979,7 +1019,6 @@ export default function StoreManagementApp() {
                       type="text"
                       value={newStore.location}
                       onChange={(e) => setNewStore(prev => ({ ...prev, location: e.target.value }))}
-                      placeholder="örn. İstanbul"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -988,7 +1027,6 @@ export default function StoreManagementApp() {
                     <textarea
                       value={newStore.address}
                       onChange={(e) => setNewStore(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Tam adres"
                       rows={3}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     />
@@ -1012,19 +1050,25 @@ export default function StoreManagementApp() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç *</label>
-                    <select
-                      value={storeEditForm.id}
-                      onChange={(e) => {
-                        const store = stores.find(s => s.id === e.target.value);
-                        setStoreEditForm(store
-                          ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '' }
-                          : { id: '', name: '', location: '', address: '' });
-                      }}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Düzenlenecek mağazayı seçin</option>
-                      {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={storeEditForm.id}
+                        onChange={(e) => {
+                          const store = stores.find(s => s.id === e.target.value);
+                          setStoreEditForm(store
+                            ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '' }
+                            : { id: '', name: '', location: '', address: '' });
+                        }}
+                        onFocus={() => setOpenSelect('storeEditId')} onBlur={() => setOpenSelect(null)}
+                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                      >
+                        <option value="">Düzenlenecek mağazayı seçin</option>
+                        {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        {openSelect === 'storeEditId' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Adı *</label>
@@ -1074,11 +1118,17 @@ export default function StoreManagementApp() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Seç</label>
-                    <select value={selectedStoreName} onChange={(e) => handleStoreSelection(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <option value="">Lütfen Güncelleme Yapılacak Mağazayı Seçiniz</option>
-                      {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select value={selectedStoreName} onChange={(e) => handleStoreSelection(e.target.value)}
+                        onFocus={() => setOpenSelect('selectedStore')} onBlur={() => setOpenSelect(null)}
+                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
+                        <option value="">Lütfen Güncelleme Yapılacak Mağazayı Seçiniz</option>
+                        {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        {openSelect === 'selectedStore' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Alan (m²)</label>
@@ -1215,7 +1265,6 @@ export default function StoreManagementApp() {
                   <div className="border-t pt-6">
                     <h4 className="text-md font-medium text-gray-700 mb-3">Notlar</h4>
                     <textarea value={selectedStore?.notes || ''} onChange={(e) => updateStore('notes', e.target.value)}
-                      placeholder="Lokasyonunuzda mağaza satışlarınıza olumlu veya olumsuz etkisi olduğunu düşündüğünüz notlarınızı yazınız."
                       rows={6} className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all" />
                     <p className="text-xs text-gray-500 mt-2">*Bu Alana Yazılan Bilgiler Herkese Açık Şekilde Görüntülenmektedir.</p>
                   </div>
@@ -1276,11 +1325,17 @@ export default function StoreManagementApp() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza *</label>
-                <select value={renovationForm.storeId} onChange={(e) => setRenovationForm(prev => ({ ...prev, storeId: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">Mağaza seçiniz</option>
-                  {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                <div className="relative">
+                  <select value={renovationForm.storeId} onChange={(e) => setRenovationForm(prev => ({ ...prev, storeId: e.target.value }))}
+                    onFocus={() => setOpenSelect('editRenovationStore')} onBlur={() => setOpenSelect(null)}
+                    className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
+                    <option value="">Mağaza seçiniz</option>
+                    {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    {openSelect === 'editRenovationStore' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
