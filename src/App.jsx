@@ -4,7 +4,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
-import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar } from 'lucide-react';
+import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar, TriangleAlert, ListFilter, ArrowDownAZ } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
 import kpiEdited from './assets/kpi-edited.svg';
 import kpiCity from './assets/kpi-city.svg';
@@ -26,23 +26,27 @@ export default function StoreManagementApp() {
   const [lastSaved, setLastSaved] = useState(null);
   const [currentView, setCurrentView] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterLocation, setFilterLocation] = useState('all');
+  const [filterLocation, setFilterLocation] = useState([]);
+  const [filterManager, setFilterManager] = useState([]);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [newStore, setNewStore] = useState({ name: '', address: '', location: '' });
   const [addingSaving, setAddingSaving] = useState(false);
-  const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '' });
+  const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '', bolgeYoneticisi: '' });
   const [storeEditSaving, setStoreEditSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
-  const [renovationForm, setRenovationForm] = useState({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
+  const [renovationForm, setRenovationForm] = useState({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] });
   const [renovationSaving, setRenovationSaving] = useState(false);
   const [uploadingRenovationImage, setUploadingRenovationImage] = useState(false);
   const [renovationSearch, setRenovationSearch] = useState('');
-  const [renovationFilterLocation, setRenovationFilterLocation] = useState('all');
+  const [renovationFilterLocation, setRenovationFilterLocation] = useState([]);
+  const [renovationFilterManager, setRenovationFilterManager] = useState([]);
   const [editingRenovation, setEditingRenovation] = useState(null);
   const [renovationMenuOpen, setRenovationMenuOpen] = useState(false);
   const [openSelect, setOpenSelect] = useState(null);
+  const [storeSort, setStoreSort] = useState('name-az');
+  const [renovationSort, setRenovationSort] = useState('name-az');
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -113,7 +117,7 @@ export default function StoreManagementApp() {
 
   const handleSaveRenovation = async () => {
     const validItems = renovationForm.aciklama.map(item => ({ ...item, text: item.text.trim() })).filter(item => item.text);
-    if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
+    if (!renovationForm.storeId || !validItems.length) return;
     setRenovationSaving(true);
     try {
       const store = stores.find(s => s.id === renovationForm.storeId);
@@ -121,13 +125,13 @@ export default function StoreManagementApp() {
         storeId: renovationForm.storeId,
         storeName: store?.name || renovationForm.storeId,
         location: store?.location || '',
-        talepTarihi: renovationForm.talepTarihi,
+        bolgeYoneticisi: store?.bolgeYoneticisi || '',
         aciklama: validItems,
         imageUrls: renovationForm.imageUrls,
         createdAt: new Date().toISOString(),
       };
       await addDoc(collection(db, 'renovations'), data);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
+      setRenovationForm({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] });
       setCurrentView('renovations-list');
     } catch (err) {
       console.error('Tadilat kaydetme hatası:', err);
@@ -372,7 +376,6 @@ export default function StoreManagementApp() {
     setEditingRenovation(renovation);
     setRenovationForm({
       storeId: renovation.storeId,
-      talepTarihi: renovation.talepTarihi,
       aciklama: normalizeAciklama(renovation.aciklama),
       imageUrls: renovation.imageUrls || [],
     });
@@ -380,7 +383,7 @@ export default function StoreManagementApp() {
 
   const handleUpdateRenovation = async () => {
     const validItems = renovationForm.aciklama.map(item => ({ ...item, text: item.text.trim() })).filter(item => item.text);
-    if (!renovationForm.storeId || !renovationForm.talepTarihi || !validItems.length) return;
+    if (!renovationForm.storeId || !validItems.length) return;
     setRenovationSaving(true);
     try {
       const store = stores.find(s => s.id === renovationForm.storeId);
@@ -388,12 +391,12 @@ export default function StoreManagementApp() {
         storeId: renovationForm.storeId,
         storeName: store?.name || renovationForm.storeId,
         location: store?.location || '',
-        talepTarihi: renovationForm.talepTarihi,
+        bolgeYoneticisi: store?.bolgeYoneticisi || '',
         aciklama: validItems,
         imageUrls: renovationForm.imageUrls,
       });
       setEditingRenovation(null);
-      setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] });
+      setRenovationForm({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] });
     } catch (err) {
       console.error('Tadilat güncelleme hatası:', err);
     } finally {
@@ -422,27 +425,33 @@ export default function StoreManagementApp() {
 
   const getFilteredStores = () => {
     const q = normTR(searchTerm);
-    return stores.filter(s => {
+    const filtered = stores.filter(s => {
       const matchSearch = !q ||
         normTR(s.name).includes(q) ||
         normTR(s.address).includes(q) ||
         normTR(s.location).includes(q);
-      return matchSearch && (filterLocation === 'all' || s.location === filterLocation);
+      return matchSearch && (filterLocation.length === 0 || filterLocation.includes(s.location)) && (filterManager.length === 0 || filterManager.includes(s.bolgeYoneticisi));
+    });
+    return filtered.sort((a, b) => {
+      if (storeSort === 'name-za') return normTR(b.name).localeCompare(normTR(a.name));
+      if (storeSort === 'location') return normTR(a.location).localeCompare(normTR(b.location));
+      return normTR(a.name).localeCompare(normTR(b.name));
     });
   };
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
+  const getUniqueManagers = () => [...new Set(stores.map(s => s.bolgeYoneticisi).filter(Boolean))];
 
   const titleCaseTR = (str) => str.replace(/(^|[\s])(\S)(\S*)/g, (_, space, first, rest) =>
     space + first.toLocaleUpperCase('tr-TR') + rest.toLocaleLowerCase('tr-TR')
   );
 
   const normalizeAciklama = (aciklama) => {
-    if (!Array.isArray(aciklama)) return [{ text: aciklama || '', status: 'active', date: '' }];
+    if (!Array.isArray(aciklama)) return [{ text: aciklama || '', status: 'active', date: '', priority: false }];
     return aciklama.map(item =>
       typeof item === 'string'
-        ? { text: item, status: 'active', date: '' }
-        : { text: item.text || '', status: item.status || 'active', date: item.date || '' }
+        ? { text: item, status: 'active', date: '', priority: false }
+        : { text: item.text || '', status: item.status || 'active', date: item.date || '', priority: item.priority || false }
     );
   };
 
@@ -456,7 +465,11 @@ export default function StoreManagementApp() {
   const getFilteredRenovations = () => {
     const storeById = Object.fromEntries(stores.map(s => [s.id, s]));
     const q = normTR(renovationSearch);
-    return renovations.filter(r => {
+    const enriched = renovations.map(r => ({
+      ...r,
+      bolgeYoneticisi: r.bolgeYoneticisi || storeById[r.storeId]?.bolgeYoneticisi || '',
+    }));
+    const filtered = enriched.filter(r => {
       const store = storeById[r.storeId];
       const aciklamaText = Array.isArray(r.aciklama)
         ? r.aciklama.map(item => typeof item === 'string' ? item : item.text).join(' ')
@@ -465,8 +478,18 @@ export default function StoreManagementApp() {
         normTR(r.storeName).includes(q) ||
         normTR(aciklamaText).includes(q) ||
         normTR(store?.location).includes(q);
-      const matchLocation = renovationFilterLocation === 'all' || store?.location === renovationFilterLocation;
-      return matchSearch && matchLocation;
+      const matchLocation = renovationFilterLocation.length === 0 || renovationFilterLocation.includes(store?.location);
+      const matchManager = renovationFilterManager.length === 0 || renovationFilterManager.includes(r.bolgeYoneticisi);
+      return matchSearch && matchLocation && matchManager;
+    });
+    return filtered.sort((a, b) => {
+      if (renovationSort === 'name-za') return normTR(b.storeName).localeCompare(normTR(a.storeName));
+      if (renovationSort === 'priority') {
+        const aPriority = Array.isArray(a.aciklama) && a.aciklama.some(i => i.priority) ? 1 : 0;
+        const bPriority = Array.isArray(b.aciklama) && b.aciklama.some(i => i.priority) ? 1 : 0;
+        return bPriority - aPriority;
+      }
+      return normTR(a.storeName).localeCompare(normTR(b.storeName));
     });
   };
 
@@ -501,11 +524,13 @@ export default function StoreManagementApp() {
       const newName = storeEditForm.name.trim();
       const newLocation = storeEditForm.location.trim();
       const newAddress = storeEditForm.address.trim();
+      const newBolgeYoneticisi = storeEditForm.bolgeYoneticisi.trim();
 
       await updateDoc(doc(db, 'stores', storeEditForm.id), {
         name: newName,
         location: newLocation,
         address: newAddress,
+        bolgeYoneticisi: newBolgeYoneticisi,
       });
 
       // Bu mağazaya ait tüm talepleri de güncelle
@@ -594,7 +619,7 @@ export default function StoreManagementApp() {
                     Talepler
                   </button>
                   <button
-                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] }); setSidebarOpen(false); }}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] }); setSidebarOpen(false); }}
                     className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center gap-4 text-lg ${currentView === 'renovations-new' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
                   >
                     <ListPlus size={32} strokeWidth={1.25} className="flex-shrink-0" />
@@ -636,29 +661,81 @@ export default function StoreManagementApp() {
           {currentView === 'dashboard' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Ana Sayfa</h2>
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mağaza Ara</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                      <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                    </div>
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Şehir Filtresi</label>
-                    <div className="relative">
-                      <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}
-                        onFocus={() => setOpenSelect('filterLocation')} onBlur={() => setOpenSelect(null)}
-                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
-                        <option value="all">Tüm Şehirler</option>
-                        {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                      </select>
-                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                        {openSelect === 'filterLocation' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
-                      </div>
-                    </div>
+                  {/* Şehir filtresi */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenSelect(openSelect === 'storeFilterDrop' ? null : 'storeFilterDrop')}
+                      className={`p-2.5 border rounded-lg transition-colors relative ${filterLocation.length > 0 || filterManager.length > 0 ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
+                    >
+                      <ListFilter size={20} />
+                      {(filterLocation.length + filterManager.length) > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">{filterLocation.length + filterManager.length}</span>
+                      )}
+                    </button>
+                    {openSelect === 'storeFilterDrop' && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[200px] py-1">
+                          {(filterLocation.length > 0 || filterManager.length > 0) && (
+                            <button onClick={() => { setFilterLocation([]); setFilterManager([]); }}
+                              className="w-full text-left px-4 py-2 text-xs text-blue-600 hover:bg-blue-50 font-medium border-b border-gray-100">
+                              Tümünü Temizle ({filterLocation.length + filterManager.length})
+                            </button>
+                          )}
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Şehir</p>
+                          {getUniqueLocations().map(loc => (
+                            <label key={loc} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
+                              <input type="checkbox" checked={filterLocation.includes(loc)}
+                                onChange={() => setFilterLocation(prev => prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc])}
+                                className="w-4 h-4 accent-blue-500 cursor-pointer" />
+                              <span className="text-sm text-gray-700">{loc}</span>
+                            </label>
+                          ))}
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">Bölge Yöneticisi</p>
+                          {getUniqueManagers().map(mgr => (
+                            <label key={mgr} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
+                              <input type="checkbox" checked={filterManager.includes(mgr)}
+                                onChange={() => setFilterManager(prev => prev.includes(mgr) ? prev.filter(m => m !== mgr) : [...prev, mgr])}
+                                className="w-4 h-4 accent-blue-500 cursor-pointer" />
+                              <span className="text-sm text-gray-700">{mgr}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Sıralama */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenSelect(openSelect === 'storeSortDrop' ? null : 'storeSortDrop')}
+                      className={`p-2.5 border rounded-lg transition-colors ${storeSort !== 'name-az' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
+                    >
+                      <ArrowDownAZ size={20} />
+                    </button>
+                    {openSelect === 'storeSortDrop' && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[160px] py-1">
+                          {[
+                            { value: 'name-az', label: 'İsim A→Z' },
+                            { value: 'name-za', label: 'İsim Z→A' },
+                            { value: 'location', label: 'Şehre Göre' },
+                          ].map(opt => (
+                            <button key={opt.value} onClick={() => { setStoreSort(opt.value); setOpenSelect(null); }}
+                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${storeSort === opt.value ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}>
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -813,36 +890,81 @@ export default function StoreManagementApp() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Tadilat Talepleri</h2>
 
               {/* Arama ve filtre */}
-              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Talep Ara</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="text"
-                        value={renovationSearch}
-                        onChange={(e) => setRenovationSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input type="text" value={renovationSearch} onChange={(e) => setRenovationSearch(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Şehir Filtresi</label>
-                    <div className="relative">
-                      <select
-                        value={renovationFilterLocation}
-                        onChange={(e) => setRenovationFilterLocation(e.target.value)}
-                        onFocus={() => setOpenSelect('renovationFilterLocation')} onBlur={() => setOpenSelect(null)}
-                        className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                      >
-                        <option value="all">Tüm Şehirler</option>
-                        {getUniqueLocations().map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                      </select>
-                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                        {openSelect === 'renovationFilterLocation' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
-                      </div>
-                    </div>
+                  {/* Şehir filtresi */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenSelect(openSelect === 'renFilterDrop' ? null : 'renFilterDrop')}
+                      className={`p-2.5 border rounded-lg transition-colors relative ${renovationFilterLocation.length > 0 || renovationFilterManager.length > 0 ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
+                    >
+                      <ListFilter size={20} />
+                      {(renovationFilterLocation.length + renovationFilterManager.length) > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">{renovationFilterLocation.length + renovationFilterManager.length}</span>
+                      )}
+                    </button>
+                    {openSelect === 'renFilterDrop' && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[200px] py-1">
+                          {(renovationFilterLocation.length > 0 || renovationFilterManager.length > 0) && (
+                            <button onClick={() => { setRenovationFilterLocation([]); setRenovationFilterManager([]); }}
+                              className="w-full text-left px-4 py-2 text-xs text-blue-600 hover:bg-blue-50 font-medium border-b border-gray-100">
+                              Tümünü Temizle ({renovationFilterLocation.length + renovationFilterManager.length})
+                            </button>
+                          )}
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Şehir</p>
+                          {getUniqueLocations().map(loc => (
+                            <label key={loc} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
+                              <input type="checkbox" checked={renovationFilterLocation.includes(loc)}
+                                onChange={() => setRenovationFilterLocation(prev => prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc])}
+                                className="w-4 h-4 accent-blue-500 cursor-pointer" />
+                              <span className="text-sm text-gray-700">{loc}</span>
+                            </label>
+                          ))}
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">Bölge Yöneticisi</p>
+                          {getUniqueManagers().map(mgr => (
+                            <label key={mgr} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
+                              <input type="checkbox" checked={renovationFilterManager.includes(mgr)}
+                                onChange={() => setRenovationFilterManager(prev => prev.includes(mgr) ? prev.filter(m => m !== mgr) : [...prev, mgr])}
+                                className="w-4 h-4 accent-blue-500 cursor-pointer" />
+                              <span className="text-sm text-gray-700">{mgr}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Sıralama */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenSelect(openSelect === 'renSortDrop' ? null : 'renSortDrop')}
+                      className={`p-2.5 border rounded-lg transition-colors ${renovationSort !== 'name-az' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
+                    >
+                      <ArrowDownAZ size={20} />
+                    </button>
+                    {openSelect === 'renSortDrop' && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[160px] py-1">
+                          {[
+                            { value: 'name-az', label: 'İsim A→Z' },
+                            { value: 'name-za', label: 'İsim Z→A' },
+                            { value: 'priority', label: 'Önceliğe Göre' },
+                          ].map(opt => (
+                            <button key={opt.value} onClick={() => { setRenovationSort(opt.value); setOpenSelect(null); }}
+                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${renovationSort === opt.value ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}>
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -856,7 +978,7 @@ export default function StoreManagementApp() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Henüz Tadilat Talebi Yok</h3>
                   <p className="text-gray-500 mb-4">İlk tadilat talebini oluşturmak için aşağıdaki butona tıklayın.</p>
                   <button
-                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', talepTarihi: '', aciklama: [{ text: '', status: 'active', date: '' }], imageUrls: [] }); }}
+                    onClick={() => { setCurrentView('renovations-new'); setRenovationForm({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] }); }}
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Yeni Talep Oluştur
@@ -896,21 +1018,6 @@ export default function StoreManagementApp() {
                       </select>
                       <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                         {openSelect === 'renovationStoreId' ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
-                    <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
-                      <input
-                        id="new-talepTarihi"
-                        type="date"
-                        value={renovationForm.talepTarihi}
-                        onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                        className="flex-1 p-3 rounded-lg date-picker text-gray-900"
-                      />
-                      <div className="pr-3 cursor-pointer flex-shrink-0" onClick={() => document.getElementById('new-talepTarihi')?.showPicker?.()}>
-                        <Calendar size={22} strokeWidth={1.5} className="text-gray-900" />
                       </div>
                     </div>
                   </div>
@@ -982,15 +1089,26 @@ export default function StoreManagementApp() {
                             >
                               İptal Edildi
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setRenovationForm(prev => {
+                                const updated = [...prev.aciklama];
+                                updated[i] = { ...updated[i], priority: !updated[i].priority };
+                                return { ...prev, aciklama: updated };
+                              })}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.priority ? 'bg-red-500 text-white' : 'bg-red-100 text-red-500 hover:bg-red-200'}`}
+                            >
+                              <TriangleAlert size={18} strokeWidth={1.75} />
+                            </button>
                           </div>
                         </div>
                       ))}
                       <button
                         type="button"
-                        onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '' }] }))}
-                        className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-dashed border-blue-300 w-full justify-center"
+                        onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '', priority: false }] }))}
+                        className="flex items-center justify-center p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-dashed border-blue-300 w-full"
                       >
-                        <Plus size={16} className="text-blue-600" /> Madde Ekle
+                        <Plus size={18} className="text-blue-600" />
                       </button>
                     </div>
                   </div>
@@ -1038,7 +1156,7 @@ export default function StoreManagementApp() {
                 <div className="mt-6">
                   <button
                     onClick={handleSaveRenovation}
-                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.text?.trim())}
+                    disabled={renovationSaving || !renovationForm.storeId || !renovationForm.aciklama.some(i => i.text?.trim())}
                     className="w-full h-[60px] flex cursor-pointer shadow-lg transition-all duration-200 hover:shadow-xl disabled:cursor-not-allowed rounded-lg overflow-hidden"
                   >
                     <div className={`w-[60px] h-full flex items-center justify-center ${renovationSaving ? 'bg-gray-600' : 'bg-gray-800'}`}>
@@ -1113,8 +1231,8 @@ export default function StoreManagementApp() {
                         onChange={(e) => {
                           const store = stores.find(s => s.id === e.target.value);
                           setStoreEditForm(store
-                            ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '' }
-                            : { id: '', name: '', location: '', address: '' });
+                            ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '', bolgeYoneticisi: store.bolgeYoneticisi || '' }
+                            : { id: '', name: '', location: '', address: '', bolgeYoneticisi: '' });
                         }}
                         onFocus={() => setOpenSelect('storeEditId')} onBlur={() => setOpenSelect(null)}
                         className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
@@ -1155,6 +1273,16 @@ export default function StoreManagementApp() {
                       disabled={!storeEditForm.id}
                       rows={3}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bölge Yöneticisi</label>
+                    <input
+                      type="text"
+                      value={storeEditForm.bolgeYoneticisi}
+                      onChange={(e) => setStoreEditForm(prev => ({ ...prev, bolgeYoneticisi: e.target.value }))}
+                      disabled={!storeEditForm.id}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
                     />
                   </div>
                   <button
@@ -1395,17 +1523,6 @@ export default function StoreManagementApp() {
                   </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Talep Tarihi *</label>
-                <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
-                  <input id="edit-talepTarihi" type="date" value={renovationForm.talepTarihi}
-                    onChange={(e) => setRenovationForm(prev => ({ ...prev, talepTarihi: e.target.value }))}
-                    className="flex-1 p-3 rounded-lg date-picker text-gray-900" />
-                  <div className="pr-3 cursor-pointer flex-shrink-0" onClick={() => document.getElementById('edit-talepTarihi')?.showPicker?.()}>
-                    <Calendar size={22} strokeWidth={1.5} className="text-gray-900" />
-                  </div>
-                </div>
-              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tadilat Maddeleri *</label>
@@ -1440,19 +1557,24 @@ export default function StoreManagementApp() {
                       <button type="button" title="Tamamlandı"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'completed' ? 'active' : 'completed' }; return { ...prev, aciklama: u }; })}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'completed' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-500 hover:bg-green-200'}`}>
-                        <Check size={14} strokeWidth={2.5} />
+                        <Check size={18} strokeWidth={1.75} />
                       </button>
                       <button type="button" title="İptal Edildi"
                         onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], status: u[i].status === 'cancelled' ? 'active' : 'cancelled' }; return { ...prev, aciklama: u }; })}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.status === 'cancelled' ? 'bg-red-500 text-white' : 'bg-red-100 text-red-500 hover:bg-red-200'}`}>
-                        <X size={14} strokeWidth={2.5} />
+                        <X size={18} strokeWidth={1.75} />
+                      </button>
+                      <button type="button" title="Öncelikli"
+                        onClick={() => setRenovationForm(prev => { const u = [...prev.aciklama]; u[i] = { ...u[i], priority: !u[i].priority }; return { ...prev, aciklama: u }; })}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${item.priority ? 'bg-red-500 text-white' : 'bg-red-100 text-red-500 hover:bg-red-200'}`}>
+                        <TriangleAlert size={18} strokeWidth={1.75} />
                       </button>
                     </div>
                   </div>
                 ))}
-                <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '' }] }))}
-                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium border border-dashed border-blue-300 w-full justify-center transition-colors">
-                  <Plus size={16} className="text-blue-600" /> Madde Ekle
+                <button type="button" onClick={() => setRenovationForm(prev => ({ ...prev, aciklama: [...prev.aciklama, { text: '', status: 'active', date: '', priority: false }] }))}
+                  className="flex items-center justify-center p-2 text-blue-600 hover:bg-blue-50 rounded-lg border border-dashed border-blue-300 w-full transition-colors">
+                  <Plus size={18} className="text-blue-600" />
                 </button>
               </div>
             </div>
@@ -1489,7 +1611,7 @@ export default function StoreManagementApp() {
               İptal
             </button>
             <button onClick={handleUpdateRenovation}
-              disabled={renovationSaving || !renovationForm.storeId || !renovationForm.talepTarihi || !renovationForm.aciklama.some(i => i.text?.trim())}
+              disabled={renovationSaving || !renovationForm.storeId || !renovationForm.aciklama.some(i => i.text?.trim())}
               className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
               {renovationSaving ? 'Kaydediliyor...' : 'Kaydet'}
             </button>

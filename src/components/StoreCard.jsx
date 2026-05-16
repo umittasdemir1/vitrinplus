@@ -129,7 +129,10 @@ export default function StoreCard({ store, onEdit, onDelete, setStores, saveStor
           <div>
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-gray-800 text-lg">{store.name}</h3>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{store.location}</span>
+              <div className="flex flex-wrap gap-1 flex-shrink-0 ml-2 justify-end">
+                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{store.location}</span>
+                {store.bolgeYoneticisi && <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{store.bolgeYoneticisi}</span>}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div><p className="text-xs text-gray-500">Alan</p><p className="font-medium">{store.size || '-'} m²</p></div>

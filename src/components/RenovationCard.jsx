@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Trash } from './Icons';
+import { TriangleAlert } from 'lucide-react';
 
 export default function RenovationCard({ renovation, onEdit, onDelete }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -14,22 +15,24 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
 
   const currentImage = images[activeIndex];
 
-  const items = Array.isArray(renovation.aciklama)
+  const items = (Array.isArray(renovation.aciklama)
     ? renovation.aciklama
-        .map(item => typeof item === 'string' ? { text: item, status: 'active', date: '' } : item)
+        .map(item => typeof item === 'string' ? { text: item, status: 'active', date: '', priority: false } : item)
         .filter(item => item.text)
     : renovation.aciklama
-      ? [{ text: renovation.aciklama, status: 'active', date: '' }]
-      : [];
+      ? [{ text: renovation.aciklama, status: 'active', date: '', priority: false }]
+      : []
+  ).sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
 
   const statusBadge = (status) => {
-    if (status === 'completed') return <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium flex-shrink-0">Tamamlandı</span>;
-    if (status === 'cancelled') return <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded font-medium flex-shrink-0">İptal</span>;
+    if (status === 'completed') return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full flex-shrink-0">Tamamlandı</span>;
+    if (status === 'cancelled') return <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full flex-shrink-0">İptal</span>;
     return null;
   };
 
   const MAX_VISIBLE = 2;
-  const hasMore = items.length > MAX_VISIBLE;
+  const visibleItems = items.slice(0, MAX_VISIBLE);
+  const hasOverflow = items.length > MAX_VISIBLE;
 
   return (
     <>
@@ -101,67 +104,89 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
             {/* Başlık + konum */}
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-gray-800 text-lg leading-tight">{renovation.storeName}</h3>
-              {renovation.location && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full flex-shrink-0 ml-2">
-                  {renovation.location}
-                </span>
-              )}
-            </div>
-
-            {/* Tarih */}
-            <div className="mb-3">
-              <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
-                📅 {new Date(renovation.talepTarihi).toLocaleDateString('tr-TR')}
-              </span>
+              <div className="flex flex-wrap gap-1 flex-shrink-0 ml-2 justify-end">
+                {renovation.location && <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{renovation.location}</span>}
+                {renovation.bolgeYoneticisi && <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{renovation.bolgeYoneticisi}</span>}
+              </div>
             </div>
 
             {/* Açıklama maddeleri */}
             {items.length > 0 && (
               <div className="mb-3">
                 <ul className="space-y-1">
-                  {items.slice(0, MAX_VISIBLE).map((item, i) => (
+                  {visibleItems.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                       <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 ${item.status === 'completed' ? 'bg-green-400' : item.status === 'cancelled' ? 'bg-red-400' : 'bg-blue-400'}`} />
-                      <span className={item.status === 'cancelled' ? 'line-through text-gray-400' : ''}>{item.text}</span>
-                      {statusBadge(item.status)}
-                      {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{new Date(item.date).toLocaleDateString('tr-TR')}</span>}
+                      <div className="flex-1 min-w-0 flex justify-between items-start gap-2">
+                        <span className={`flex items-start gap-1 ${item.status === 'cancelled' ? 'line-through text-gray-400' : ''}`}>
+                          {item.priority && <TriangleAlert size={13} strokeWidth={2} className="text-red-500 flex-shrink-0 mt-0.5" />}
+                          {item.text}
+                        </span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {statusBadge(item.status)}
+                          {item.date && <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">📅 {new Date(item.date).toLocaleDateString('tr-TR')}</span>}
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
-                {hasMore && (
+                {hasOverflow && (
                   <button
                     onClick={() => setShowDescModal(true)}
                     className="mt-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
                   >
-                    +{items.length - MAX_VISIBLE} madde daha göster
+                    Devamını gör
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          {/* Alt kısım — StoreCard ile aynı yapı */}
+          {/* Alt kısım */}
           <div className="mt-auto">
-            <div className="flex justify-between items-center text-xs text-gray-500 border-t pt-2 mb-2">
-              <span>Oluşturulma</span>
-              <span>{new Date(renovation.createdAt).toLocaleDateString('tr-TR')}</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onEdit?.()}
-                className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Düzenle
-              </button>
-              {onDelete && (
-                <button
-                  onClick={onDelete}
-                  className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors"
-                  title="Talebi Sil"
-                >
-                  <Trash className="w-4 h-4" />
-                </button>
+            <div className="flex gap-2 items-stretch">
+              {/* İstatistik kutusu */}
+              {items.length > 0 && (
+                <div className="flex-1 flex items-center justify-around bg-gray-50 rounded-lg px-2 py-1.5 text-center border border-gray-100">
+                  <div>
+                    <div className="text-sm font-semibold text-gray-700">{items.length}</div>
+                    <div className="text-[10px] text-gray-400 leading-tight">Toplam</div>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div>
+                    <div className="text-sm font-semibold text-green-600">{items.filter(i => i.status === 'completed').length}</div>
+                    <div className="text-[10px] text-gray-400 leading-tight">Tamam</div>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div>
+                    <div className="text-sm font-semibold text-blue-500">{items.filter(i => i.status === 'active').length}</div>
+                    <div className="text-[10px] text-gray-400 leading-tight">Bekliyor</div>
+                  </div>
+                  <div className="w-px h-6 bg-gray-200" />
+                  <div>
+                    <div className="text-sm font-semibold text-red-500">{items.filter(i => i.status === 'cancelled').length}</div>
+                    <div className="text-[10px] text-gray-400 leading-tight">İptal</div>
+                  </div>
+                </div>
               )}
+              {/* Butonlar */}
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={() => onEdit?.()}
+                  className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Düzenle
+                </button>
+                {onDelete && (
+                  <button
+                    onClick={onDelete}
+                    className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white text-sm rounded-lg transition-colors"
+                    title="Talebi Sil"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -223,10 +248,9 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="font-bold text-gray-800 text-lg">{renovation.storeName}</h3>
-                <span className="text-xs text-gray-400">
-                  {new Date(renovation.talepTarihi).toLocaleDateString('tr-TR')}
-                  {renovation.location && ` · ${renovation.location}`}
-                </span>
+                {renovation.location && (
+                  <span className="text-xs text-gray-400">{renovation.location}</span>
+                )}
               </div>
               <button onClick={() => setShowDescModal(false)}
                 className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
@@ -242,10 +266,13 @@ export default function RenovationCard({ renovation, onEdit, onDelete }) {
                     {i + 1}
                   </span>
                   <div className="flex-1">
-                    <span className={`text-sm leading-relaxed ${item.status === 'cancelled' ? 'line-through text-gray-400' : 'text-gray-700'}`}>{item.text}</span>
+                    <span className={`flex items-start gap-1 text-sm leading-relaxed ${item.status === 'cancelled' ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                      {item.priority && <TriangleAlert size={13} strokeWidth={2} className="text-red-500 flex-shrink-0 mt-0.5" />}
+                      {item.text}
+                    </span>
                     <div className="flex items-center gap-2 mt-0.5">
                       {statusBadge(item.status)}
-                      {item.date && <span className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString('tr-TR')}</span>}
+                      {item.date && <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">📅 {new Date(item.date).toLocaleDateString('tr-TR')}</span>}
                     </div>
                   </div>
                 </li>
