@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
 import { computeImageHash, findDuplicate } from './services/imageHash';
+import { buildBrandIndex, canonicalBrand, normalizeBrand } from './services/brands';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
 import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar, TriangleAlert, ListFilter, ArrowDownAZ } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
@@ -364,6 +365,15 @@ export default function StoreManagementApp() {
     updateStore('competitorBrands', brands);
   };
 
+  const brandIndex = useMemo(() => buildBrandIndex(stores), [stores]);
+
+  // Alandan çıkınca bilinen bir markanın farklı yazımını standart yazıma çevir
+  const normalizeCompetitorBrand = (index) => {
+    const current = selectedStore?.competitorBrands?.[index] || '';
+    const fixed = canonicalBrand(current, brandIndex);
+    if (fixed !== current) updateCompetitorBrand(index, fixed);
+  };
+
   const getValidImageIndexes = (images) =>
     (images || []).map((img, i) => (img?.trim() ? i : null)).filter(i => i !== null);
 
@@ -587,8 +597,8 @@ export default function StoreManagementApp() {
     const map = {};
     stores.forEach(store => {
       (store.competitorBrands || []).filter(b => b.trim()).forEach(brand => {
-        const key = brand.toLowerCase();
-        if (!map[key]) map[key] = { name: brand, count: 0, stores: [] };
+        const key = normalizeBrand(brand);
+        if (!map[key]) map[key] = { name: canonicalBrand(brand, brandIndex), count: 0, stores: [] };
         map[key].count++;
         map[key].stores.push(store.name);
       });
@@ -1443,10 +1453,15 @@ export default function StoreManagementApp() {
                       {Array.from({ length: 10 }, (_, index) => (
                         <div key={index} className="flex items-center gap-2 sm:gap-3">
                           <span className="text-sm text-gray-600 w-6 sm:w-8 flex-shrink-0">{index + 1}.</span>
-                          <input type="text" value={selectedStore?.competitorBrands?.[index] || ''} onChange={(e) => updateCompetitorBrand(index, e.target.value)}
+                          <input type="text" list="competitor-brand-options" autoComplete="off"
+                            value={selectedStore?.competitorBrands?.[index] || ''} onChange={(e) => updateCompetitorBrand(index, e.target.value)}
+                            onBlur={() => normalizeCompetitorBrand(index)}
                             className={`flex-1 p-2 sm:p-3 border rounded-lg focus:ring-2 focus:border-transparent text-sm sm:text-base transition-all ${index === 0 ? 'border-blue-300 focus:ring-blue-500' : 'border-gray-300 focus:ring-red-500'}`} />
                         </div>
                       ))}
+                      <datalist id="competitor-brand-options">
+                        {brandIndex.names.map(name => <option key={name} value={name} />)}
+                      </datalist>
                     </div>
                     <div className="mt-4 p-3 bg-red-50 rounded-lg">
                       <h5 className="font-medium text-red-800 mb-2">Rakip Markalar:</h5>
