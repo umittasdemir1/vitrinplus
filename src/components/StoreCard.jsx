@@ -117,24 +117,26 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
         {/* Kart yüksekliği sabit (620px); içerik sığmazsa üst blok kendi içinde kayar */}
         <div className="p-4 flex flex-col flex-1 min-h-0 justify-between">
           <div className="min-h-0 overflow-y-auto">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="font-semibold text-gray-800 text-lg">{store.name}</h3>
+            {/* Başlık her kartta 2 satır yüksekliğinde (h-14 = 2 x 28px): tek satırlık adlarda da
+                Alan/Lokasyon satırı tüm kartlarda aynı hizada başlar */}
+            <div className="flex justify-between items-start mb-1 h-14">
+              <h3 className="font-semibold text-gray-800 text-lg line-clamp-2" title={store.name}>{store.name}</h3>
               <div className="flex flex-wrap gap-1 flex-shrink-0 ml-2 justify-end">
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{store.location}</span>
                 {store.bolgeYoneticisi && <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{store.bolgeYoneticisi}</span>}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="grid grid-cols-3 gap-4 mb-2">
               <div><p className="text-xs text-gray-500">Alan</p><p className="font-medium">{store.size || '-'} m²</p></div>
               <div><p className="text-xs text-gray-500">Lokasyon</p><p className="font-medium">{store.lokasyonTipi || '-'}</p></div>
               <div><p className="text-xs text-gray-500">Rakip Markalar</p><p className="font-medium">{competitorCount || 0} marka</p></div>
             </div>
             {competitorCount > 0 && (
-              <div className="mb-3">
-                <p className="text-xs text-gray-500 mb-2">Rakip Markalar:</p>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Rakip Markalar:</p>
                 <div className="flex flex-wrap gap-1 overflow-visible">
                   {store.competitorBrands?.filter(b => b.trim()).map((brand, i) => (
-                    <span key={i} className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded flex-shrink-0">
+                    <span key={i} className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded flex-shrink-0">
                       {brand}
                     </span>
                   ))}
