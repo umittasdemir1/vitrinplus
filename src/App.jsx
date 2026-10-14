@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc, updateDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from './services/firebase';
+import { computeImageHash, findDuplicate } from './services/imageHash';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
 import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar, TriangleAlert, ListFilter, ArrowDownAZ } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
@@ -168,10 +169,7 @@ export default function StoreManagementApp() {
     });
   };
 
-  const uploadToFirebaseStorage = async (file, storeId, imageIndex) => {
-    if (!file.type.startsWith('image/')) throw new Error('Sadece resim dosyası yükleyebilirsiniz');
-
-    const compressedDataUrl = await compressImage(file);
+  const uploadToFirebaseStorage = async (file, compressedDataUrl, storeId, imageIndex) => {
     const isWebP = compressedDataUrl.startsWith('data:image/webp');
     const blob = await (await fetch(compressedDataUrl)).blob();
 
@@ -209,27 +207,51 @@ export default function StoreManagementApp() {
     }
   };
 
+  const storeTimestamps = () => ({ lastUpdated: new Date().toISOString(), savedAt: new Date().toLocaleString('tr-TR') });
+
+  // Fotoğraf listesi sadece arrayUnion/arrayRemove ile değişir; böylece aynı mağaza
+  // iki sekmede açıkken biri diğerinin eklediği/sildiği fotoğrafları ezemez.
+  const removeStoreImage = async (storeId, url) => {
+    if (!auth.currentUser) await signInAnonymously(auth);
+    await updateDoc(doc(db, 'stores', storeId), { images: arrayRemove(url), ...storeTimestamps() });
+    await deleteStorageFile(url);
+  };
+
   const handleMultipleImageUpload = async (files) => {
     if (!selectedStore || !files.length) return;
     setUploading(true);
     try {
-      const updatedImages = [...(selectedStore.images || [])];
-      let uploadCount = 0;
+      if (!auth.currentUser) await signInAnonymously(auth);
+      const live = stores.find(s => s.id === selectedStore.id) || selectedStore;
+      const liveImages = live.images || [];
+      const known = (live.imageHashes || []).filter(e => liveImages.includes(e.url));
+      const added = [];
+      const skipped = [];
       for (const file of files) {
-        const nextIndex = updatedImages.length;
         try {
-          updatedImages.push(await uploadToFirebaseStorage(file, selectedStore.id, nextIndex));
-          uploadCount++;
+          if (!file.type.startsWith('image/')) throw new Error('Sadece resim dosyası yükleyebilirsiniz');
+          const compressed = await compressImage(file);
+          const hash = await computeImageHash(compressed);
+          if (findDuplicate(hash, known)) { skipped.push(file.name); continue; }
+          const url = await uploadToFirebaseStorage(file, compressed, selectedStore.id, liveImages.length + added.length);
+          const entry = { url, hash };
+          known.push(entry);
+          added.push(entry);
         } catch (e) {
           console.error(`Fotoğraf yükleme hatası (${file.name}):`, e);
           alert(`${file.name} yüklenemedi: ${e.message}`);
         }
       }
-      if (uploadCount > 0) {
-        const updatedStore = { ...selectedStore, images: updatedImages };
-        setSelectedStore(updatedStore);
-        const result = await saveToFirebase(updatedStore);
-        if (result.success) { setLastSaved(new Date()); setTimeout(() => setLastSaved(null), 3000); }
+      if (added.length > 0) {
+        await updateDoc(doc(db, 'stores', selectedStore.id), {
+          images: arrayUnion(...added.map(e => e.url)),
+          imageHashes: arrayUnion(...added),
+          ...storeTimestamps(),
+        });
+        setLastSaved(new Date()); setTimeout(() => setLastSaved(null), 3000);
+      }
+      if (skipped.length > 0) {
+        alert(`Bu fotoğraflar mağazada zaten yüklü olduğu için atlandı:\n${skipped.join('\n')}`);
       }
     } catch (e) {
       console.error('Multi-upload error:', e);
@@ -239,39 +261,14 @@ export default function StoreManagementApp() {
     }
   };
 
-  const handleImageUpload = async (event, imageIndex) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { alert('Fotoğraf çok büyük! Maksimum 10MB.'); return; }
-    if (!file.type.startsWith('image/')) { alert('Lütfen sadece fotoğraf dosyası seçin.'); return; }
-    setUploading(true);
-    try {
-      await deleteStorageFile(selectedStore?.images?.[imageIndex] || '');
-      const downloadURL = await uploadToFirebaseStorage(file, selectedStore.id, imageIndex);
-      const newImages = [...(selectedStore?.images || ['', '', '', '', ''])];
-      newImages[imageIndex] = downloadURL;
-      updateStore('images', newImages);
-    } catch (e) {
-      console.error('Image upload error:', e);
-      alert(`Fotoğraf yüklenemedi: ${e.message}`);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleImageDelete = async (imageIndex) => {
-    if (!selectedStore?.images?.[imageIndex]) return;
+    const url = selectedStore?.images?.[imageIndex];
+    if (!url) return;
     try {
-      await deleteStorageFile(selectedStore.images[imageIndex]);
-      const newImages = [...(selectedStore?.images || ['', '', '', '', ''])];
-      newImages[imageIndex] = '';
-      updateStore('images', newImages);
-      if (currentImageIndex === imageIndex) {
-        const next = newImages.findIndex(img => img?.trim());
-        setCurrentImageIndex(next >= 0 ? next : 0);
-      }
+      await removeStoreImage(selectedStore.id, url);
     } catch (e) {
       console.error('Image delete error:', e);
+      alert('Fotoğraf silinemedi.');
     }
   };
 
@@ -285,17 +282,13 @@ export default function StoreManagementApp() {
         location: String(storeData.location || '').trim(),
         bolgeYoneticisi: String(storeData.bolgeYoneticisi || '').trim(),
         size: String(storeData.size || '').trim(),
-        images: (storeData.images || []).map(img => {
-          if (!img || typeof img !== 'string') return '';
-          return (img.includes('firebasestorage.googleapis.com') || img.startsWith('data:image/')) ? img : '';
-        }).filter((img, i, arr) => img || i < arr.findLastIndex(x => x) + 1),
         competitorBrands: (storeData.competitorBrands || []).filter(b => b?.trim()).map(b => String(b).trim()).slice(0, 10),
         notes: String(storeData.notes || '').trim().slice(0, 1000),
-        lastUpdated: new Date().toISOString(),
-        savedAt: new Date().toLocaleString('tr-TR'),
+        ...storeTimestamps(),
         version: '2.0',
       };
-      await setDoc(doc(db, 'stores', storeData.id), cleanData);
+      // images bilerek yazılmıyor (bkz. removeStoreImage); merge diğer alanları korur
+      await setDoc(doc(db, 'stores', storeData.id), cleanData, { merge: true });
       return { success: true };
     } catch (e) {
       console.error('Firebase kaydetme hatası:', e);
@@ -304,6 +297,25 @@ export default function StoreManagementApp() {
       setSaving(false);
     }
   };
+
+  // Açık mağazanın fotoğraflarını Firestore'daki canlı veriyle senkron tut
+  useEffect(() => {
+    if (!selectedStore) return;
+    const live = stores.find(s => s.id === selectedStore.id);
+    if (!live) return;
+    setSelectedStore(prev => (prev?.id === live.id
+      ? { ...prev, images: live.images || [], imageHashes: live.imageHashes || [] }
+      : prev));
+  }, [stores]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Gösterilen fotoğraf silindiyse ilk dolu fotoğrafa geç
+  useEffect(() => {
+    const images = selectedStore?.images || [];
+    if (!images[currentImageIndex]?.trim()) {
+      const first = images.findIndex(img => img?.trim());
+      if (first >= 0) setCurrentImageIndex(first);
+    }
+  }, [selectedStore?.images, currentImageIndex]);
 
   const handleStoreSelection = (storeId) => {
     if (!storeId) return;
@@ -765,8 +777,7 @@ export default function StoreManagementApp() {
                     store={store}
                     onEdit={() => handleStoreSelection(store.id)}
                     onDelete={() => handleDeleteStore(store.id)}
-                    setStores={setStores}
-                    saveStore={saveToFirebase}
+                    removeImage={removeStoreImage}
                   />
                 ))}
               </div>

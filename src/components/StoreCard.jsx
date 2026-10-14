@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { deleteObject, ref } from 'firebase/storage';
-import { storage } from '../services/firebase';
 import { ChevronLeft, ChevronRight, Trash } from './Icons';
 
-export default function StoreCard({ store, onEdit, onDelete, setStores, saveStore }) {
+export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
   const images = store.images || ['', '', '', '', ''];
   const competitorCount = store.competitorBrands?.filter(b => b.trim()).length || 0;
   const hasData = !!(store.size || store.images?.some(img => img?.trim()) || store.competitorBrands?.some(b => b?.trim()));
@@ -30,33 +28,15 @@ export default function StoreCard({ store, onEdit, onDelete, setStores, saveStor
   };
 
   const handleQuickImageDelete = async () => {
-    if (!store.images?.[cardImageIndex]?.trim()) return;
+    const url = store.images?.[cardImageIndex];
+    if (!url?.trim()) return;
     setDeleting(true);
     try {
-      const updatedStore = { ...store, images: [...store.images] };
-      if (updatedStore.images[cardImageIndex].includes('firebasestorage.googleapis.com')) {
-        try {
-          const url = updatedStore.images[cardImageIndex];
-          const decodedPath = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
-          await deleteObject(ref(storage, decodedPath));
-        } catch (e) {
-          console.warn('Storage silme hatası:', e);
-        }
-      }
-      updatedStore.images[cardImageIndex] = '';
-      const result = await saveStore(updatedStore);
-      if (result.success) {
-        setStores(prev => {
-          const next = [...prev];
-          const idx = next.findIndex(s => s.id === store.id);
-          if (idx >= 0) next[idx] = updatedStore;
-          return next;
-        });
-        const nextValid = updatedStore.images.map((img, i) => (img?.trim() ? i : null)).filter(i => i !== null);
-        setCardImageIndex(nextValid[0] ?? 0);
-      }
+      // Liste onSnapshot ile güncellenir; kart ilk dolu fotoğrafa kendiliğinden geçer
+      await removeImage(store.id, url);
     } catch (e) {
       console.error('Quick image delete error:', e);
+      alert('Fotoğraf silinemedi.');
     } finally {
       setDeleting(false);
     }
