@@ -44,7 +44,7 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md min-h-[620px] flex flex-col">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md h-[620px] flex flex-col">
         <div className="relative flex-shrink-0 h-[260px] w-full bg-gray-100 rounded-lg overflow-hidden group">
           {images[cardImageIndex]?.trim() ? (
             <>
@@ -107,8 +107,9 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
           )}
         </div>
 
-        <div className="p-4 flex flex-col flex-1 justify-between">
-          <div>
+        {/* Kart yüksekliği sabit (620px); içerik sığmazsa üst blok kendi içinde kayar */}
+        <div className="p-4 flex flex-col flex-1 min-h-0 justify-between">
+          <div className="min-h-0 overflow-y-auto">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-gray-800 text-lg">{store.name}</h3>
               <div className="flex flex-wrap gap-1 flex-shrink-0 ml-2 justify-end">
@@ -126,7 +127,7 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
                 <div className="flex flex-wrap gap-1 overflow-visible">
                   {store.competitorBrands?.filter(b => b.trim()).map((brand, i) => (
                     <span key={i} className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded flex-shrink-0">
-                      {brand.length > 12 ? brand.substring(0, 12) + '...' : brand}
+                      {brand}
                     </span>
                   ))}
                 </div>
