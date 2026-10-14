@@ -47,6 +47,7 @@ export default function StoreManagementApp() {
   const [renovationMenuOpen, setRenovationMenuOpen] = useState(false);
   const [openSelect, setOpenSelect] = useState(null);
   const [storeSort, setStoreSort] = useState('name-az');
+  const [expandedCompetitors, setExpandedCompetitors] = useState({});
   const [renovationSort, setRenovationSort] = useState('name-az');
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -296,6 +297,26 @@ export default function StoreManagementApp() {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Rakip markanın mağazaları: ilk `limit` tanesi, "+N daha" ile aynı satırda genişler
+  const renderCompetitorStoreChips = (competitor, limit) => {
+    const expanded = !!expandedCompetitors[competitor.name];
+    const hidden = competitor.stores.length - limit;
+    const visible = expanded ? competitor.stores : competitor.stores.slice(0, limit);
+    const toggle = () => setExpandedCompetitors(prev => ({ ...prev, [competitor.name]: !expanded }));
+    return (
+      <div className="flex flex-wrap gap-1">
+        {visible.map((store, idx) => (
+          <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store}</span>
+        ))}
+        {hidden > 0 && (
+          <button type="button" onClick={toggle} className="inline-block px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs rounded transition-colors">
+            {expanded ? 'Daha az' : `+${hidden} daha`}
+          </button>
+        )}
+      </div>
+    );
   };
 
   // Açık mağazanın fotoğraflarını Firestore'daki canlı veriyle senkron tut
@@ -826,20 +847,7 @@ export default function StoreManagementApp() {
                           </span>
                         </div>
                         <div className="mt-2">
-                          <div className="flex flex-wrap gap-1">
-                            {competitor.stores.slice(0, 2).map((store, idx) => (
-                              <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store.length > 15 ? store.substring(0, 15) + '...' : store}</span>
-                            ))}
-                            {competitor.stores.length > 2 && <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">+{competitor.stores.length - 2} daha</span>}
-                          </div>
-                          {competitor.stores.length > 2 && (
-                            <details className="mt-1 relative z-20">
-                              <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800 py-1">Tümünü göster</summary>
-                              <div className="mt-1 flex flex-wrap gap-1 bg-white p-2 rounded border shadow-lg">
-                                {competitor.stores.map((store, idx) => <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store}</span>)}
-                              </div>
-                            </details>
-                          )}
+                          {renderCompetitorStoreChips(competitor, 2)}
                         </div>
                       </div>
                     ))}
@@ -866,18 +874,9 @@ export default function StoreManagementApp() {
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <div className="max-w-xs flex flex-wrap gap-1">
-                                {competitor.stores.slice(0, 3).map((store, idx) => <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store}</span>)}
-                                {competitor.stores.length > 3 && <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">+{competitor.stores.length - 3} daha</span>}
+                              <div className="max-w-md">
+                                {renderCompetitorStoreChips(competitor, 3)}
                               </div>
-                              {competitor.stores.length > 3 && (
-                                <details className="mt-2 text-xs text-gray-500 cursor-pointer">
-                                  <summary className="hover:text-gray-700">Tümünü göster</summary>
-                                  <div className="mt-1 flex flex-wrap gap-1">
-                                    {competitor.stores.map((store, idx) => <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store}</span>)}
-                                  </div>
-                                </details>
-                              )}
                             </td>
                           </tr>
                         ))}
