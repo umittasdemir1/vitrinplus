@@ -6,6 +6,8 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
   const images = store.images || ['', '', '', '', ''];
   const competitorCount = store.competitorBrands?.filter(b => b.trim()).length || 0;
   const hasData = hasStoreData(store);
+  // Adresinde "Coming Soon" yazan (henüz açılmamış) mağazalarda fotoğraf yerine afiş gösterilir
+  const comingSoon = /coming\s*soon/i.test(store.address || '');
   const [selectedImageIndex, setCardImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -47,7 +49,11 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
     <>
       <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md h-[620px] flex flex-col">
         <div className="relative flex-shrink-0 h-[260px] w-full bg-gray-100 rounded-lg overflow-hidden group">
-          {images[cardImageIndex]?.trim() ? (
+          {comingSoon ? (
+            <div className="w-full h-full flex items-center justify-center bg-black">
+              <span className="text-white text-3xl font-black tracking-widest">COMING SOON</span>
+            </div>
+          ) : images[cardImageIndex]?.trim() ? (
             <>
               {brokenImages[cardImageIndex] ? (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
