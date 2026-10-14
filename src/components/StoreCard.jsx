@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Trash } from './Icons';
+import { hasStoreData } from '../services/storeStatus';
 
 export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
   const images = store.images || ['', '', '', '', ''];
   const competitorCount = store.competitorBrands?.filter(b => b.trim()).length || 0;
-  const hasData = !!(store.size || store.images?.some(img => img?.trim()) || store.competitorBrands?.some(b => b?.trim()));
+  const hasData = hasStoreData(store);
   const [selectedImageIndex, setCardImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);

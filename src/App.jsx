@@ -5,6 +5,7 @@ import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage
 import { auth, db, storage } from './services/firebase';
 import { computeImageHash, findDuplicate } from './services/imageHash';
 import { buildBrandIndex, normalizeBrand, suggestBrand } from './services/brands';
+import { STORE_STATUS_FILTERS } from './services/storeStatus';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
 import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar, TriangleAlert, ListFilter, ArrowDownAZ } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
@@ -30,6 +31,7 @@ export default function StoreManagementApp() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLocation, setFilterLocation] = useState([]);
   const [filterManager, setFilterManager] = useState([]);
+  const [filterStatus, setFilterStatus] = useState([]);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState({});
   const [showModal, setShowModal] = useState(false);
@@ -484,7 +486,9 @@ export default function StoreManagementApp() {
         normTR(s.name).includes(q) ||
         normTR(s.address).includes(q) ||
         normTR(s.location).includes(q);
-      return matchSearch && (filterLocation.length === 0 || filterLocation.includes(s.location)) && (filterManager.length === 0 || filterManager.includes(s.bolgeYoneticisi));
+      const matchStatus = filterStatus.length === 0 ||
+        STORE_STATUS_FILTERS.some(f => filterStatus.includes(f.key) && f.match(s));
+      return matchSearch && matchStatus && (filterLocation.length === 0 || filterLocation.includes(s.location)) && (filterManager.length === 0 || filterManager.includes(s.bolgeYoneticisi));
     });
     return filtered.sort((a, b) => {
       if (storeSort === 'name-za') return normTR(b.name).localeCompare(normTR(a.name));
@@ -726,24 +730,34 @@ export default function StoreManagementApp() {
                   <div className="relative">
                     <button
                       onClick={() => setOpenSelect(openSelect === 'storeFilterDrop' ? null : 'storeFilterDrop')}
-                      className={`p-2.5 border rounded-lg transition-colors relative ${filterLocation.length > 0 || filterManager.length > 0 ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
+                      className={`p-2.5 border rounded-lg transition-colors relative ${filterLocation.length + filterManager.length + filterStatus.length > 0 ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-300 text-gray-500 hover:border-gray-400'}`}
                     >
                       <ListFilter size={20} />
-                      {(filterLocation.length + filterManager.length) > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">{filterLocation.length + filterManager.length}</span>
+                      {(filterLocation.length + filterManager.length + filterStatus.length) > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">{filterLocation.length + filterManager.length + filterStatus.length}</span>
                       )}
                     </button>
                     {openSelect === 'storeFilterDrop' && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setOpenSelect(null)} />
                         <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[200px] py-1">
-                          {(filterLocation.length > 0 || filterManager.length > 0) && (
-                            <button onClick={() => { setFilterLocation([]); setFilterManager([]); }}
+                          {(filterLocation.length + filterManager.length + filterStatus.length) > 0 && (
+                            <button onClick={() => { setFilterLocation([]); setFilterManager([]); setFilterStatus([]); }}
                               className="w-full text-left px-4 py-2 text-xs text-blue-600 hover:bg-blue-50 font-medium border-b border-gray-100">
-                              Tümünü Temizle ({filterLocation.length + filterManager.length})
+                              Tümünü Temizle ({filterLocation.length + filterManager.length + filterStatus.length})
                             </button>
                           )}
-                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Şehir</p>
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Durum</p>
+                          {STORE_STATUS_FILTERS.map(({ key, label, match }) => (
+                            <label key={key} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
+                              <input type="checkbox" checked={filterStatus.includes(key)}
+                                onChange={() => setFilterStatus(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])}
+                                className="w-4 h-4 accent-blue-500 cursor-pointer" />
+                              <span className="text-sm text-gray-700 whitespace-nowrap">{label}</span>
+                              <span className="ml-auto pl-2 text-xs text-gray-400">{stores.filter(match).length}</span>
+                            </label>
+                          ))}
+                          <p className="px-4 pt-2 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">Şehir</p>
                           {getUniqueLocations().map(loc => (
                             <label key={loc} className="flex items-center gap-3 px-4 py-1.5 cursor-pointer hover:bg-gray-50">
                               <input type="checkbox" checked={filterLocation.includes(loc)}
