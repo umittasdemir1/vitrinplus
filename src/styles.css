@@ -72,3 +72,7 @@ body {
         .modal-scroll::-webkit-scrollbar-button { display: none; }
         .modal-scroll { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
 
+
+/* Kaydırılabilir ama kaydırma çubuğu görünmeyen alanlar (ör. ana sayfa şehir sekmeleri) */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

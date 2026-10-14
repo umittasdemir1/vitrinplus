@@ -728,7 +728,8 @@ export default function StoreManagementApp() {
         </div>
       </div>
 
-      <div className="flex-1 lg:ml-0">
+      {/* min-w-0: tek sıra sekme çubuğu gibi geniş içerik ana alanı ekran dışına itmesin */}
+      <div className="flex-1 min-w-0 lg:ml-0">
         <div className={`bg-white border-b border-gray-200 sticky top-0 z-10 transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           <div className="flex items-center justify-between px-6 py-4">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
@@ -843,7 +844,7 @@ export default function StoreManagementApp() {
                     </button>
                   );
                   return (
-                    <div className="mt-3 flex flex-nowrap overflow-x-auto border-b border-gray-200">
+                    <div className="mt-3 flex flex-nowrap overflow-x-auto no-scrollbar border-b border-gray-200">
                       {tab('all', 'Tümü', stores.length, filterLocation.length === 0 && !uneditedActive,
                         () => { setFilterLocation([]); setFilterStatus(prev => prev.filter(k => k !== 'unedited')); })}
                       {getCitiesByStoreCount().map(([city, count]) => tab(city, city, count,
