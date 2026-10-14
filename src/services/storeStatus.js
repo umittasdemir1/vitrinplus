@@ -8,3 +8,6 @@ export const STORE_STATUS_FILTERS = [
   { key: 'unedited', label: 'Henüz düzenlenmemiş', match: (s) => !hasStoreData(s) },
   { key: 'noPhoto', label: 'Fotoğraf yüklenmemiş', match: (s) => !hasStoreImages(s) },
 ];
+
+// Mağazanın bulunduğu yer tipi (Firestore: stores/{id}.lokasyonTipi)
+export const LOCATION_TYPES = ['AVM', 'Cadde', 'Marina', 'Resort', 'Outlet', 'Havalimanı'];

@@ -5,7 +5,7 @@ import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage
 import { auth, db, storage } from './services/firebase';
 import { computeImageHash, findDuplicate } from './services/imageHash';
 import { buildBrandIndex, normalizeBrand, suggestBrand } from './services/brands';
-import { STORE_STATUS_FILTERS } from './services/storeStatus';
+import { LOCATION_TYPES, STORE_STATUS_FILTERS } from './services/storeStatus';
 import { ChevronLeft, ChevronRight, Save, Search, Trash } from './components/Icons';
 import { Store, LayoutDashboard, List, ListPlus, LayoutPanelTop, Plus, MapPinPlus, SquarePen, PaintRoller, ChevronDown, ChevronUp, Check, X, Calendar, TriangleAlert, ListFilter, ArrowDownAZ } from 'lucide-react';
 import kpiStore from './assets/kpi-store.svg';
@@ -35,9 +35,9 @@ export default function StoreManagementApp() {
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState({});
   const [showModal, setShowModal] = useState(false);
-  const [newStore, setNewStore] = useState({ name: '', address: '', location: '' });
+  const [newStore, setNewStore] = useState({ name: '', address: '', location: '', lokasyonTipi: '' });
   const [addingSaving, setAddingSaving] = useState(false);
-  const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '', bolgeYoneticisi: '' });
+  const [storeEditForm, setStoreEditForm] = useState({ id: '', name: '', location: '', address: '', bolgeYoneticisi: '', lokasyonTipi: '' });
   const [storeEditSaving, setStoreEditSaving] = useState(false);
   const [renovations, setRenovations] = useState([]);
   const [renovationForm, setRenovationForm] = useState({ storeId: '', aciklama: [{ text: '', status: 'active', date: '', priority: false }], imageUrls: [] });
@@ -302,6 +302,24 @@ export default function StoreManagementApp() {
     }
   };
 
+  // Mağaza ekle / düzenle formlarındaki lokasyon tipi seçimi
+  const renderLocationTypeSelect = (value, onChange, disabled = false, selectKey) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Lokasyon Tipi</label>
+      <div className="relative">
+        <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
+          onFocus={() => setOpenSelect(selectKey)} onBlur={() => setOpenSelect(null)}
+          className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none disabled:bg-gray-50 disabled:text-gray-400">
+          <option value="">Seçilmedi</option>
+          {LOCATION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+          {openSelect === selectKey ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
+        </div>
+      </div>
+    </div>
+  );
+
   // Rakip markanın mağazaları: ilk `limit` tanesi, "+N daha" ile aynı satırda genişler
   const renderCompetitorStoreChips = (competitor, limit) => {
     const expanded = !!expandedCompetitors[competitor.name];
@@ -499,6 +517,12 @@ export default function StoreManagementApp() {
 
   const getUniqueLocations = () => [...new Set(stores.map(s => s.location).filter(Boolean))];
   const getUniqueManagers = () => [...new Set(stores.map(s => s.bolgeYoneticisi).filter(Boolean))];
+  // Ana sayfa sekmeleri için şehirler, mağaza sayısına göre çoktan aza
+  const getCitiesByStoreCount = () => {
+    const counts = {};
+    stores.forEach(s => { if (s.location) counts[s.location] = (counts[s.location] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'));
+  };
 
   const titleCaseTR = (str) => str.replace(/(^|[\s])(\S)(\S*)/g, (_, space, first, rest) =>
     space + first.toLocaleUpperCase('tr-TR') + rest.toLocaleLowerCase('tr-TR')
@@ -560,13 +584,14 @@ export default function StoreManagementApp() {
         name: newStore.name.trim(),
         address: newStore.address.trim(),
         location: newStore.location.trim(),
+        lokasyonTipi: newStore.lokasyonTipi,
         images: ['', '', '', '', ''],
         competitorBrands: ['', '', '', '', '', '', '', '', '', ''],
         notes: '',
         size: '',
       };
       await setDoc(doc(db, 'stores', id), storeDoc);
-      setNewStore({ name: '', address: '', location: '' });
+      setNewStore({ name: '', address: '', location: '', lokasyonTipi: '' });
       setCurrentView('dashboard');
     } catch (e) {
       console.error('Mağaza eklenemedi:', e);
@@ -589,6 +614,7 @@ export default function StoreManagementApp() {
         location: newLocation,
         address: newAddress,
         bolgeYoneticisi: newBolgeYoneticisi,
+        lokasyonTipi: storeEditForm.lokasyonTipi,
       });
 
       // Bu mağazaya ait tüm talepleri de güncelle
@@ -806,6 +832,29 @@ export default function StoreManagementApp() {
                     )}
                   </div>
                 </div>
+                {/* Şehir sekmeleri: her zaman tek sıra; sığmazsa yatay kayar */}
+                {(() => {
+                  const uneditedFilter = STORE_STATUS_FILTERS.find(f => f.key === 'unedited');
+                  const uneditedActive = filterStatus.includes('unedited');
+                  const tab = (key, label, count, active, onClick) => (
+                    <button key={key} type="button" onClick={onClick}
+                      className={`flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm border-b-2 transition-colors ${active ? 'border-blue-500 text-blue-600 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                      {label}{count !== undefined && <span className="ml-1.5 text-xs text-gray-400">{count}</span>}
+                    </button>
+                  );
+                  return (
+                    <div className="mt-3 flex flex-nowrap overflow-x-auto border-b border-gray-200">
+                      {tab('all', 'Tümü', stores.length, filterLocation.length === 0 && !uneditedActive,
+                        () => { setFilterLocation([]); setFilterStatus(prev => prev.filter(k => k !== 'unedited')); })}
+                      {getCitiesByStoreCount().map(([city, count]) => tab(city, city, count,
+                        filterLocation.length === 1 && filterLocation[0] === city,
+                        () => setFilterLocation(prev => (prev.length === 1 && prev[0] === city ? [] : [city]))))}
+                      <span className="flex-shrink-0 w-px bg-gray-200 my-2 mx-1" />
+                      {tab('unedited', uneditedFilter.label, stores.filter(uneditedFilter.match).length, uneditedActive,
+                        () => setFilterStatus(prev => (prev.includes('unedited') ? prev.filter(k => k !== 'unedited') : [...prev, 'unedited'])))}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
@@ -1242,6 +1291,7 @@ export default function StoreManagementApp() {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
+                  {renderLocationTypeSelect(newStore.lokasyonTipi, v => setNewStore(prev => ({ ...prev, lokasyonTipi: v })), false, 'newStoreType')}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Adres</label>
                     <textarea
@@ -1276,8 +1326,8 @@ export default function StoreManagementApp() {
                         onChange={(e) => {
                           const store = stores.find(s => s.id === e.target.value);
                           setStoreEditForm(store
-                            ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '', bolgeYoneticisi: store.bolgeYoneticisi || '' }
-                            : { id: '', name: '', location: '', address: '', bolgeYoneticisi: '' });
+                            ? { id: store.id, name: store.name || '', location: store.location || '', address: store.address || '', bolgeYoneticisi: store.bolgeYoneticisi || '', lokasyonTipi: store.lokasyonTipi || '' }
+                            : { id: '', name: '', location: '', address: '', bolgeYoneticisi: '', lokasyonTipi: '' });
                         }}
                         onFocus={() => setOpenSelect('storeEditId')} onBlur={() => setOpenSelect(null)}
                         className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
@@ -1310,6 +1360,7 @@ export default function StoreManagementApp() {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
                     />
                   </div>
+                  {renderLocationTypeSelect(storeEditForm.lokasyonTipi, v => setStoreEditForm(prev => ({ ...prev, lokasyonTipi: v })), !storeEditForm.id, 'storeEditType')}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Adres</label>
                     <textarea
