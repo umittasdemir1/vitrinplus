@@ -308,8 +308,11 @@ export default function StoreManagementApp() {
     const toggle = () => setExpandedCompetitors(prev => ({ ...prev, [competitor.name]: !expanded }));
     return (
       <div className="flex flex-wrap gap-1">
-        {visible.map((store, idx) => (
-          <span key={idx} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">{store}</span>
+        {visible.map(store => (
+          <button key={store.id} type="button" onClick={() => handleStoreSelection(store.id)} title={`${store.name} mağazasını aç`}
+            className="inline-block px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs rounded transition-colors">
+            {store.name}
+          </button>
         ))}
         {hidden > 0 && (
           <button type="button" onClick={toggle} className="inline-block px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs rounded transition-colors">
@@ -355,6 +358,7 @@ export default function StoreManagementApp() {
     setCurrentImageIndex(firstImage >= 0 ? firstImage : 0);
     setSidebarOpen(false);
     setCurrentView('management');
+    window.scrollTo({ top: 0 });
   };
 
   const updateStore = (field, value) => setSelectedStore(prev => ({ ...prev, [field]: value }));
@@ -600,7 +604,7 @@ export default function StoreManagementApp() {
         const key = normalizeBrand(brand);
         if (!map[key]) map[key] = { name: canonicalBrand(brand, brandIndex), count: 0, stores: [] };
         map[key].count++;
-        map[key].stores.push(store.name);
+        map[key].stores.push({ id: store.id, name: store.name });
       });
     });
     return Object.values(map).sort((a, b) => b.count - a.count);
