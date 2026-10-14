@@ -7,13 +7,15 @@ export default function StoreCard({ store, onEdit, onDelete, setStores, saveStor
   const images = store.images || ['', '', '', '', ''];
   const competitorCount = store.competitorBrands?.filter(b => b.trim()).length || 0;
   const hasData = !!(store.size || store.images?.some(img => img?.trim()) || store.competitorBrands?.some(b => b?.trim()));
-  const [cardImageIndex, setCardImageIndex] = useState(0);
+  const [selectedImageIndex, setCardImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [brokenImages, setBrokenImages] = useState({});
 
   const validIndexes = images.map((img, i) => (img && img.trim() ? i : null)).filter(i => i !== null);
+  // Boş slotlar (silinmiş fotoğraflar) atlanır; seçili index boşsa ilk dolu fotoğraf gösterilir
+  const cardImageIndex = validIndexes.includes(selectedImageIndex) ? selectedImageIndex : (validIndexes[0] ?? 0);
 
   const prevCardImage = () => {
     if (validIndexes.length <= 1) return;

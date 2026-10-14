@@ -283,6 +283,7 @@ export default function StoreManagementApp() {
         name: String(storeData.name || '').trim(),
         address: String(storeData.address || '').trim(),
         location: String(storeData.location || '').trim(),
+        bolgeYoneticisi: String(storeData.bolgeYoneticisi || '').trim(),
         size: String(storeData.size || '').trim(),
         images: (storeData.images || []).map(img => {
           if (!img || typeof img !== 'string') return '';
@@ -316,7 +317,8 @@ export default function StoreManagementApp() {
       notes: store.notes || '',
       size: store.size || '',
     });
-    setCurrentImageIndex(0);
+    const firstImage = (store.images || []).findIndex(img => img?.trim());
+    setCurrentImageIndex(firstImage >= 0 ? firstImage : 0);
     setSidebarOpen(false);
     setCurrentView('management');
   };
