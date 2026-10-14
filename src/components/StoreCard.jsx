@@ -118,8 +118,9 @@ export default function StoreCard({ store, onEdit, onDelete, removeImage }) {
                 {store.bolgeYoneticisi && <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{store.bolgeYoneticisi}</span>}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 mb-3">
+            <div className="grid grid-cols-3 gap-4 mb-3">
               <div><p className="text-xs text-gray-500">Alan</p><p className="font-medium">{store.size || '-'} m²</p></div>
+              <div><p className="text-xs text-gray-500">Lokasyon</p><p className="font-medium">{store.lokasyonTipi || '-'}</p></div>
               <div><p className="text-xs text-gray-500">Rakip Markalar</p><p className="font-medium">{competitorCount || 0} marka</p></div>
             </div>
             {competitorCount > 0 && (
